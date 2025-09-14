@@ -74,36 +74,43 @@
 <body class="antialiased">
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 border-b border-theme" style="background:rgba(0,0,0,0.08);backdrop-filter:blur(6px);">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="#" class="flex items-center gap-2 font-semibold">
-            <a href="/" class="flex items-center gap-3 min-w-[120px]">
-                <img
-                  src="/header-logo.png"
-                  alt="PostEngineAI"
-                  class="h-10 sm:h-12 w-auto object-contain block"
-                  loading="eager"
-                  decoding="sync"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"
-                />
-                <span class="hidden font-semibold text-base sm:text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
-                  PostEngineAI
-                </span>
-              </a>
-        <nav class="hidden sm:flex items-center gap-4 text-sm">
-          <a href="#features" class="hover:opacity-80">Features</a>
-          <a href="#pricing" class="hover:opacity-80">Pricing</a>
-          <a href="#signup" class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</a>
+<header class="sticky top-0 z-40 border-b border-theme" 
+style="background:rgba(0,0,0,0.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
+<div class="max-w-6xl mx-auto px-4 sm:px-6">
+<div class="flex items-center justify-between h-16">
 
-          <!-- Theme toggle button -->
-          <button id="themeToggle" class="ml-3 w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80 transition" aria-label="Toggle theme">
-            <span id="themeIcon">🌙</span>
-          </button>
-        </nav>
-      </div>
-    </div>
-  </header>
+<!-- Logo -->
+<a href="/" class="flex items-center gap-3 min-w-[120px]">
+<img
+  src="/header-logo.png"
+  alt="PostEngineAI"
+  class="h-10 sm:h-12 w-auto object-contain block"
+  loading="eager"
+  decoding="sync"
+  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"
+/>
+<span class="hidden sm:inline font-semibold text-base sm:text-lg 
+             bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] 
+             bg-clip-text text-transparent">
+  PostEngineAI
+</span>
+</a>
+
+<!-- Nav -->
+<nav class="hidden sm:flex items-center gap-4 text-sm">
+<a href="#features" class="hover:opacity-80">Features</a>
+<a href="#pricing" class="hover:opacity-80">Pricing</a>
+<a href="#signup" class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</a>
+
+<!-- Theme toggle -->
+<button id="themeToggle" class="ml-3 w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80 transition" aria-label="Toggle theme">
+  <span id="themeIcon">🌙</span>
+</button>
+</nav>
+
+</div>
+</div>
+</header>
 
   <!-- Hero -->
   <section class="ig-gradient text-white">
