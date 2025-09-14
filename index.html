@@ -78,10 +78,18 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
         <a href="#" class="flex items-center gap-2 font-semibold">
-            <a href="/" class="flex items-center gap-3">
-                <img src="/header-logo.png" 
-                     alt="PostEngineAI Logo" 
-                     class="h-10 sm:h-12 w-auto object-contain" />
+            <a href="/" class="flex items-center gap-3 min-w-[120px]">
+                <img
+                  src="/header-logo.png"
+                  alt="PostEngineAI"
+                  class="h-10 sm:h-12 w-auto object-contain block"
+                  loading="eager"
+                  decoding="sync"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"
+                />
+                <span class="hidden font-semibold text-base sm:text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
+                  PostEngineAI
+                </span>
               </a>
         <nav class="hidden sm:flex items-center gap-4 text-sm">
           <a href="#features" class="hover:opacity-80">Features</a>
