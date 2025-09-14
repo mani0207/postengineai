@@ -13,21 +13,24 @@
   <link rel="icon" href="/favicon.ico"/>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Tailwind config (optional)
+  <!-- Put config FIRST -->
+<script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: {
-              DEFAULT: '#6D5BFF',
-              dark: '#5746ff'
-            }
-          }
+            facebook: '#1877F2',
+            youtube: '#FF0000',
+          },
+          backgroundImage: {
+            'ig-gradient': 'linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)',
+          },
         }
       }
     }
   </script>
+  <!-- Then load Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .gradient {
       background-image: radial-gradient(ellipse at top left, rgba(109,91,255,.25), transparent 50%),
