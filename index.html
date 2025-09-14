@@ -13,77 +13,72 @@
   <link rel="icon" href="/favicon.ico"/>
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#6D5BFF',
+              dark: '#5746ff'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient {
+      background-image: radial-gradient(ellipse at top left, rgba(109,91,255,.25), transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(109,91,255,.2), transparent 50%);
+    }
+  </style>
 </head>
 <body class="antialiased text-slate-900 bg-white">
-
   <!-- Header -->
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-slate-100">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
       <div class="flex items-center justify-between h-16">
         <a href="#" class="flex items-center gap-2 font-semibold">
-          <span class="inline-block w-8 h-8 rounded-xl bg-purple-100 grid place-content-center">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-purple-600"><path d="M3 6.75A.75.75 0 0 1 3.75 6h7.5a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-.75.75H8.25V18a.75.75 0 0 1-1.28.53l-3.5-3.5a.75.75 0 0 1-.22-.53V6.75zM13.5 6a.75.75 0 0 0-.75.75v2.5c0 .414.336.75.75.75h2.25V18a.75.75 0 0 0 1.28.53l3.5-3.5c.141-.14.22-.332.22-.53V6.75A.75.75 0 0 0 20.25 6h-6.75z"/></svg>
+          <span class="inline-block w-8 h-8 rounded-xl bg-primary/10 grid place-content-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-primary"><path d="M3 6.75A.75.75 0 0 1 3.75 6h7.5a.75.75 0 0 1 .75.75v2.5a.75.75 0 0 1-.75.75H8.25V18a.75.75 0 0 1-1.28.53l-3.5-3.5a.75.75 0 0 1-.22-.53V6.75zM13.5 6a.75.75 0 0 0-.75.75v2.5c0 .414.336.75.75.75h2.25V18a.75.75 0 0 0 1.28.53l3.5-3.5c.141-.14.22-.332.22-.53V6.75A.75.75 0 0 0 20.25 6h-6.75z"/></svg>
           </span>
           <span>PostEngineAI</span>
         </a>
         <nav class="hidden sm:flex items-center gap-6 text-sm">
-          <a href="#features" class="hover:text-purple-600">Features</a>
-          <a href="#pricing" class="hover:text-purple-600">Pricing</a>
-          <a href="#signup" class="inline-flex items-center rounded-xl bg-purple-600 px-4 py-2 text-white hover:bg-purple-700">Join Early Access</a>
+          <a href="#features" class="hover:text-primary">Features</a>
+          <a href="#pricing" class="hover:text-primary">Pricing</a>
+          <a href="#signup" class="inline-flex items-center rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary-dark">Join Early Access</a>
         </nav>
       </div>
     </div>
   </header>
 
   <!-- Hero -->
-  <section class="text-white" style="background-image:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);">
+  <section class="gradient">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
       <div class="grid lg:grid-cols-2 gap-10 items-center">
         <div>
-          <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">Stop stressing about captions. <span class="text-yellow-200">Let AI do the writing</span>.</h1>
-          <p class="mt-5 text-lg text-white/90">Daily captions, story ideas, and hashtag suggestions — personalized for your niche (pets, fitness, food, or local business). Save <strong>5+ hours/week</strong>.</p>
+          <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">Stop stressing about captions. <span class="text-primary">Let AI do the writing</span>.</h1>
+          <p class="mt-5 text-lg text-slate-600">Daily captions, story ideas, and hashtag suggestions — personalized for your niche (pets, fitness, food, or local business). Save <strong>5+ hours/week</strong>.</p>
           <div class="mt-8 flex items-center gap-3">
-            <a href="#signup" class="inline-flex items-center rounded-xl px-5 py-3 text-white hover:opacity-90" style="background-color:#1877F2;">Join Early Access – $9/mo</a>
-            <a href="#features" class="text-white hover:underline">See how it works</a>
+            <a href="#signup" class="inline-flex items-center rounded-xl bg-primary px-5 py-3 text-white hover:bg-primary-dark">Join Early Access – $9/mo</a>
+            <a href="#features" class="text-primary hover:underline">See how it works</a>
           </div>
-          <div class="mt-6 text-xs text-white/70">Lock in early access pricing. Cancel anytime.</div>
+          <div class="mt-6 text-xs text-slate-500">Lock in early access pricing. Cancel anytime.</div>
         </div>
         <div class="relative">
-          <div class="rounded-2xl border border-white/20 shadow-sm p-6 bg-white/10 backdrop-blur">
+          <div class="rounded-2xl border border-slate-200 shadow-sm p-6 bg-white">
             <div class="text-sm font-semibold">Preview</div>
-            <div class="mt-3 text-sm leading-relaxed">
+            <div class="mt-3 text-slate-700 text-sm leading-relaxed">
               <p><span class="font-semibold">Niche:</span> Fitness Coaches</p>
               <div class="mt-3 space-y-3">
-                <div class="p-3 rounded-xl bg-white/20 border border-white/30">Crush your Monday workout 💪 Start strong, finish stronger. Who’s in? #FitnessGoals #MondayMotivation</div>
-                <div class="p-3 rounded-xl bg-white/20 border border-white/30">Form over ego. Lighter weight, deeper focus. Your future self will thank you. #GymTips #Consistency</div>
-                <div class="p-3 rounded-xl bg-white/20 border border-white/30">Small wins stack up. Today’s 1% better becomes next month’s breakthrough. #Discipline #Progress</div>
+                <div class="p-3 rounded-xl bg-slate-50 border">Crush your Monday workout 💪 Start strong, finish stronger. Who’s in? #FitnessGoals #MondayMotivation</div>
+                <div class="p-3 rounded-xl bg-slate-50 border">Form over ego. Lighter weight, deeper focus. Your future self will thank you. #GymTips #Consistency</div>
+                <div class="p-3 rounded-xl bg-slate-50 border">Small wins stack up. Today’s 1% better becomes next month’s breakthrough. #Discipline #Progress</div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section id="features" class="bg-white">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-      <div class="text-center max-w-2xl mx-auto">
-        <h2 class="text-3xl font-bold">How PostEngineAI helps you post faster</h2>
-        <p class="mt-2 text-slate-600">Lightweight workflow, results that feel on-brand.</p>
-      </div>
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <div class="p-6 rounded-2xl border bg-white shadow-sm">
-          <div class="text-lg font-semibold">Niche-tailored captions</div>
-          <p class="mt-2 text-slate-600">Pick your niche and get AI-matched captions & story ideas in seconds.</p>
-        </div>
-        <div class="p-6 rounded-2xl border bg-white shadow-sm">
-          <div class="text-lg font-semibold">Faster workflow</div>
-          <p class="mt-2 text-slate-600">Generate → copy → post. Save 5+ hours every week.</p>
-        </div>
-        <div class="p-6 rounded-2xl border bg-white shadow-sm">
-          <div class="text-lg font-semibold">Hashtags that work</div>
-          <p class="mt-2 text-slate-600">Clean, relevant suggestions to boost reach without looking spammy.</p>
         </div>
       </div>
     </div>
@@ -98,7 +93,7 @@
       </div>
       <div class="mt-8 grid md:grid-cols-3 gap-6">
         <div class="md:col-start-2 p-6 rounded-2xl border bg-white shadow-sm">
-          <div class="text-sm font-semibold text-purple-600">Starter</div>
+          <div class="text-sm font-semibold text-primary">Starter</div>
           <div class="mt-2 text-4xl font-bold">$9<span class="text-xl font-normal text-slate-500">/mo</span></div>
           <ul class="mt-4 space-y-2 text-slate-700">
             <li>• 30–50 AI captions & story ideas / month</li>
@@ -106,7 +101,7 @@
             <li>• Save & copy with one click</li>
             <li>• Cancel anytime</li>
           </ul>
-          <a href="#signup" class="mt-6 inline-flex w-full justify-center rounded-xl px-4 py-3 text-white hover:opacity-90 transition" style="background-color:#1877F2;">Join Early Access</a>
+          <a href="#signup" class="mt-6 inline-flex w-full justify-center rounded-xl bg-primary px-4 py-3 text-white hover:bg-primary-dark">Join Early Access</a>
           <div class="mt-3 text-xs text-slate-500 text-center">Annual plan $90/yr (save 17%) — coming soon</div>
         </div>
       </div>
@@ -120,6 +115,11 @@
         <div>
           <h3 class="text-2xl font-bold">Join early access</h3>
           <p class="mt-2 text-slate-600">Be among the first to try PostEngineAI and lock in <strong>$9/month</strong> for life. We’ll email you when your invite is ready.</p>
+          <ul class="mt-6 space-y-2 text-slate-700">
+            <li>• Works for Instagram and TikTok</li>
+            <li>• Niche-tailored content (pets, fitness, food, local biz)</li>
+            <li>• Cancel anytime</li>
+          </ul>
         </div>
         <div>
           <form id="ea-form" action="/api/early-access" method="POST" class="p-6 rounded-2xl border bg-white shadow-sm">
@@ -138,22 +138,48 @@
             <label class="block text-sm font-medium mt-4">Instagram/TikTok Handle (optional)</label>
             <input name="handle" type="text" class="mt-1 w-full rounded-xl border px-3 py-2" placeholder="@yourhandle" />
             <input type="hidden" name="source" value="Landing Page" />
-            <button class="mt-6 inline-flex w-full justify-center rounded-xl px-4 py-3 text-white hover:opacity-90" style="background-color:#1877F2;">Request Invite</button>
+            <button class="mt-6 inline-flex w-full justify-center rounded-xl bg-primary px-4 py-3 text-white hover:bg-primary-dark">Request Invite</button>
             <p id="ea-success" class="hidden mt-3 text-sm text-green-600">Thanks! You’re on the list. We’ll be in touch soon.</p>
             <p id="ea-error" class="hidden mt-3 text-sm text-red-600">Oops, something went wrong. Please try again.</p>
           </form>
-        </div>
-      </div>
-    </div>
-  </section>
+          <script>
+            const form = document.getElementById('ea-form');
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const btn = form.querySelector('button');
+              btn.disabled = true; btn.textContent = 'Submitting…';
 
-  <!-- Final CTA -->
-  <section class="text-white" style="background-image:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 text-center">
-      <h3 class="text-2xl sm:text-3xl font-bold">Ready to post faster with AI?</h3>
-      <p class="mt-2 text-white/90">Lock in early access for $9/month and save hours every week.</p>
-      <div class="mt-6 flex items-center justify-center">
-        <a href="#signup" class="inline-flex items-center rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">Join Early Access</a>
+              const data = {
+                name: form.name.value,
+                email: form.email.value,
+                niche: form.niche.value,
+                handle: form.handle.value,
+                source: form.source.value || "Landing Page",
+              };
+
+              try {
+                const res = await fetch(form.action, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data),
+                });
+
+                if (res.ok) {
+                  document.getElementById('ea-success').classList.remove('hidden');
+                  document.getElementById('ea-error').classList.add('hidden');
+                  form.reset();
+                } else {
+                  document.getElementById('ea-error').classList.remove('hidden');
+                  document.getElementById('ea-success').classList.add('hidden');
+                }
+              } catch (err) {
+                document.getElementById('ea-error').classList.remove('hidden');
+              } finally {
+                btn.disabled = false; btn.textContent = 'Request Invite';
+              }
+            });
+          </script>
+        </div>
       </div>
     </div>
   </section>
@@ -163,9 +189,9 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 text-sm text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>© <span id="year"></span> PostEngineAI. All rights reserved.</div>
       <div class="flex items-center gap-4">
-        <a href="#" class="hover:text-purple-600">Privacy</a>
-        <a href="#" class="hover:text-purple-600">Terms</a>
-        <a href="mailto:hello@postengineai.com" class="hover:text-purple-600">Contact</a>
+        <a href="#" class="hover:text-primary">Privacy</a>
+        <a href="#" class="hover:text-primary">Terms</a>
+        <a href="mailto:hello@postengineai.com" class="hover:text-primary">Contact</a>
       </div>
     </div>
   </footer>
