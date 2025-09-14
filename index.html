@@ -37,6 +37,7 @@
     .border-theme{ border-color: var(--border); }
     .ig-gradient{ background-image: var(--ig-grad); }
     .badge-new{ background: var(--badge); color: #fff; }
+    .themed-input{ background: var(--card); color: var(--text); border-color: var(--border); }
   </style>
 </head>
 
@@ -54,12 +55,10 @@
           <a href="#features" class="hover:opacity-80">Features</a>
           <a href="#pricing" class="hover:opacity-80">Pricing</a>
           <a href="#signup" class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</a>
-
           <!-- Theme toggle -->
-          <select id="themeSelect" class="ml-2 rounded-lg border border-theme px-2 py-1 bg-transparent">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-          </select>
+          <button id="themeToggle" class="ml-3 w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80 transition">
+            <span id="themeIcon">🌙</span>
+          </button>
         </nav>
       </div>
     </div>
@@ -68,11 +67,25 @@
   <!-- Hero -->
   <section class="ig-gradient text-white">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
-      <h1 class="text-4xl font-bold">Stop stressing about captions. <span class="text-yellow-200">Let AI do the writing</span>.</h1>
-      <p class="mt-6 text-lg">Daily captions, story ideas, and hashtags — save <strong>5+ hours/week</strong>.</p>
-      <div class="mt-8 flex gap-3">
-        <a href="#signup" class="btn-primary rounded-xl px-5 py-3">Join Early Access – $9/mo</a>
-        <a href="#features" class="underline">See how it works</a>
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">Stop stressing about captions. <span class="text-yellow-200">Let AI do the writing</span>.</h1>
+          <p class="mt-5 text-lg">Daily captions, story ideas, and hashtag suggestions — personalized for your niche (pets, fitness, food, or local business). Save <strong>5+ hours/week</strong>.</p>
+          <div class="mt-8 flex gap-3">
+            <a href="#signup" class="btn-primary rounded-xl px-5 py-3">Join Early Access – $9/mo</a>
+            <a href="#features" class="underline">See how it works</a>
+          </div>
+        </div>
+        <div>
+          <div class="card p-6 rounded-2xl border border-theme shadow-sm">
+            <div class="text-sm font-semibold">Preview</div>
+            <div class="mt-3 text-sm space-y-3">
+              <div class="p-3 rounded-xl border border-theme">Crush your Monday workout 💪 Start strong, finish stronger. #FitnessGoals</div>
+              <div class="p-3 rounded-xl border border-theme">Form over ego. Lighter weight, deeper focus. #GymTips</div>
+              <div class="p-3 rounded-xl border border-theme">Small wins stack up. Today’s 1% better → tomorrow’s breakthrough.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -80,7 +93,10 @@
   <!-- Features -->
   <section id="features" class="py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <h2 class="text-3xl font-bold text-center">How it helps</h2>
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold">How PostEngineAI helps you post faster</h2>
+        <p class="mt-2 muted">Lightweight workflow, results that feel on-brand.</p>
+      </div>
       <div class="mt-10 grid md:grid-cols-3 gap-6">
         <div class="card p-6 rounded-2xl border border-theme">Niche-tailored captions</div>
         <div class="card p-6 rounded-2xl border border-theme">Faster workflow</div>
@@ -92,7 +108,10 @@
   <!-- Pricing -->
   <section id="pricing" class="py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <h2 class="text-3xl font-bold text-center">Simple pricing</h2>
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold">Simple pricing. No surprises.</h2>
+        <p class="mt-2 muted">One plan for early access. Upgrade paths coming soon.</p>
+      </div>
       <div class="mt-8 grid md:grid-cols-3 gap-6">
         <div class="card md:col-start-2 p-6 rounded-2xl border border-theme text-center">
           <div class="flex justify-center items-center gap-2">
@@ -103,11 +122,89 @@
           <ul class="mt-4 muted space-y-1">
             <li>30–50 AI captions & ideas / month</li>
             <li>Niche-specific hashtags</li>
+            <li>Save & copy with one click</li>
             <li>Cancel anytime</li>
           </ul>
           <a href="#signup" class="btn-primary inline-block mt-6 px-4 py-3 rounded-xl w-full">Join Early Access</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Signup -->
+  <section id="signup" class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="grid lg:grid-cols-2 gap-10 items-start">
+        <div>
+          <h3 class="text-2xl font-bold">Join early access</h3>
+          <p class="mt-2 muted">Be among the first to try PostEngineAI and lock in <strong>$9/month</strong> for life. We’ll email you when your invite is ready.</p>
+        </div>
+        <div>
+          <form id="ea-form" action="/api/early-access" method="POST" class="card p-6 rounded-2xl border border-theme shadow-sm">
+            <label class="block text-sm font-medium">Name</label>
+            <input name="name" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="Jane Doe" />
+            <label class="block text-sm font-medium mt-4">Email</label>
+            <input name="email" type="email" required class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="you@example.com" />
+            <label class="block text-sm font-medium mt-4">Niche</label>
+            <select name="niche" class="themed-input mt-1 w-full rounded-xl border px-3 py-2">
+              <option>Pets</option>
+              <option>Fitness</option>
+              <option>Food</option>
+              <option>Local Business</option>
+              <option>Other</option>
+            </select>
+            <label class="block text-sm font-medium mt-4">Instagram/TikTok Handle (optional)</label>
+            <input name="handle" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="@yourhandle" />
+            <input type="hidden" name="source" value="Landing Page" />
+            <button class="mt-6 w-full btn-primary rounded-xl px-4 py-3">Request Invite</button>
+            <p id="ea-success" class="hidden mt-3 text-sm text-green-500">Thanks! You’re on the list.</p>
+            <p id="ea-error" class="hidden mt-3 text-sm text-red-500">Oops, something went wrong.</p>
+          </form>
+          <script>
+            const form = document.getElementById('ea-form');
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const btn = form.querySelector('button');
+              btn.disabled = true; btn.textContent = 'Submitting…';
+              const data = {
+                name: form.name.value,
+                email: form.email.value,
+                niche: form.niche.value,
+                handle: form.handle.value,
+                source: form.source.value || 'Landing Page',
+              };
+              try {
+                const res = await fetch(form.action, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data),
+                });
+                if (res.ok) {
+                  document.getElementById('ea-success').classList.remove('hidden');
+                  form.reset();
+                } else {
+                  document.getElementById('ea-error').classList.remove('hidden');
+                }
+              } catch {
+                document.getElementById('ea-error').classList.remove('hidden');
+              } finally {
+                btn.disabled = false; btn.textContent = 'Request Invite';
+              }
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="ig-gradient text-white py-12 text-center">
+    <h3 class="text-2xl sm:text-3xl font-bold">Ready to post faster with AI?</h3>
+    <div class="mt-6">
+      <a href="#signup" class="inline-flex items-center gap-2 rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">
+        Join Early Access
+        <span class="badge-new text-xs px-2 py-0.5 rounded-full">New!</span>
+      </a>
     </div>
   </section>
 
@@ -120,21 +217,26 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const root = document.documentElement;
-    const select = document.getElementById('themeSelect');
+    const toggleBtn = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
 
     function applyTheme(mode){
-      if(mode === 'dark'){ root.classList.add('theme-dark'); }
-      else { root.classList.remove('theme-dark'); }
+      if(mode === 'dark'){
+        root.classList.add('theme-dark');
+        icon.textContent = '🌙';
+      } else {
+        root.classList.remove('theme-dark');
+        icon.textContent = '🌞';
+      }
     }
 
     const saved = localStorage.getItem('pe_theme') || 'dark';
-    select.value = saved;
     applyTheme(saved);
 
-    select.addEventListener('change', () => {
-      const mode = select.value;
-      localStorage.setItem('pe_theme', mode);
-      applyTheme(mode);
+    toggleBtn.addEventListener('click', () => {
+      const newMode = root.classList.contains('theme-dark') ? 'light' : 'dark';
+      localStorage.setItem('pe_theme', newMode);
+      applyTheme(newMode);
     });
   </script>
 </body>
