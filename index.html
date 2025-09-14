@@ -11,7 +11,7 @@
   <meta property="og:image" content="/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="/favicon.ico">
-  <!-- Tailwind via CDN (no custom config needed) -->
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="antialiased text-slate-900 bg-white">
@@ -99,7 +99,7 @@
     </div>
   </section>
 
-  <!-- Pricing (Facebook CTA + IG hover ring) -->
+  <!-- Pricing (Facebook CTA + IG hover ring + YouTube "New!" badge) -->
   <section id="pricing" class="bg-slate-50">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
       <div class="text-center max-w-2xl mx-auto">
@@ -108,7 +108,10 @@
       </div>
       <div class="mt-8 grid md:grid-cols-3 gap-6">
         <div class="md:col-start-2 p-6 rounded-2xl border bg-white shadow-sm">
-          <div class="text-sm font-semibold" style="color:#8134AF;">Starter</div>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold" style="color:#8134AF;">Starter</span>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full text-white" style="background-color:#FF0000;">New!</span>
+          </div>
           <div class="mt-2 text-4xl font-bold">$9<span class="text-xl font-normal text-slate-500">/mo</span></div>
           <ul class="mt-4 space-y-2 text-slate-700">
             <li>• 30–50 AI captions & story ideas / month</li>
@@ -204,13 +207,16 @@
     </div>
   </section>
 
-  <!-- Final CTA banner (Instagram gradient + white button, YouTube red not overused) -->
+  <!-- Final CTA banner (Instagram gradient + white button + YouTube "New!" badge) -->
   <section class="text-white" style="background-image:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 text-center">
       <h3 class="text-2xl sm:text-3xl font-bold">Ready to post faster with AI?</h3>
       <p class="mt-2 text-white/90">Lock in early access for $9/month and save hours every week.</p>
       <div class="mt-6 flex items-center justify-center">
-        <a href="#signup" class="inline-flex items-center rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">Join Early Access</a>
+        <a href="#signup" class="inline-flex items-center gap-2 rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">
+          Join Early Access
+          <span class="text-xs font-bold px-2 py-0.5 rounded-full text-white" style="background-color:#FF0000;">New!</span>
+        </a>
       </div>
     </div>
   </section>
