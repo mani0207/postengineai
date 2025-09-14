@@ -170,7 +170,9 @@
               e.preventDefault();
               const btn = form.querySelector('button');
               btn.disabled = true; btn.textContent = 'Submitting…';
+          
               try {
+                // Collect form data into a JSON object
                 const payload = {
                   name: form.name.value,
                   email: form.email.value,
@@ -178,11 +180,14 @@
                   handle: form.handle.value,
                   source: 'Landing Page',
                 };
+          
+                // Send as JSON
                 const res = await fetch(form.action, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify(payload),
                 });
+          
                 if (res.ok) {
                   document.getElementById('ea-success').classList.remove('hidden');
                   form.reset();
