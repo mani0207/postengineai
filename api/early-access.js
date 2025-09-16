@@ -4,18 +4,21 @@
 async function getTransporter() {
   const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
   const nodemailer = await import('nodemailer');
-  return nodemailer.createTransport({
+  const tx = nodemailer.createTransport({
     host: SMTP_HOST,                    // in-v3.mailjet.com
     port: Number(SMTP_PORT || 587),     // 587 (TLS) or 465 (SSL)
     secure: String(SMTP_SECURE || 'false') === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
+    auth: { user: SMTP_USER, pass: SMTP_PASSWORD || SMTP_PASS } // support either var name
   });
+  // Optional: verify on cold start; comment out if noisy
+  try { await tx.verify(); } catch (e) { console.error('SMTP verify failed:', e?.message || e); }
+  return tx;
 }
 
 async function sendOwnerEmail({ name, email, niche, handle, source }) {
   try {
     const tx = await getTransporter(); if (!tx) return;
-    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // must be a VERIFIED sender in Mailjet
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // MUST be a verified sender in Mailjet
     const to = process.env.NOTIFY_TO || 'manisundar.92@gmail.com';
     await tx.sendMail({
       from, to,
@@ -31,14 +34,14 @@ async function sendOwnerEmail({ name, email, niche, handle, source }) {
         </div>`
     });
   } catch (err) {
-    console.error('Owner email failed:', err);
+    console.error('Owner email failed:', err?.response || err);
   }
 }
 
 async function sendUserConfirmEmail({ name, email }) {
   try {
     const tx = await getTransporter(); if (!tx || !email) return;
-    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // must be VERIFIED in Mailjet
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // MUST be verified in Mailjet
     await tx.sendMail({
       from,
       to: email,
@@ -56,7 +59,7 @@ async function sendUserConfirmEmail({ name, email }) {
         </div>`
     });
   } catch (err) {
-    console.error('User confirmation email failed:', err);
+    console.error('User confirmation email failed:', err?.response || err);
   }
 }
 
@@ -68,7 +71,6 @@ export default async function handler(req, res) {
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
@@ -95,7 +97,6 @@ export default async function handler(req, res) {
         .toString()
         .split(',')[0]
         .trim() || req.socket?.remoteAddress || null;
-
     const ua = (req.headers['user-agent'] || '').toString() || null;
     const country = (req.headers['x-vercel-ip-country'] || '').toString() || null;
     const region  = (req.headers['x-vercel-ip-country-region'] || '').toString() || null;
@@ -136,14 +137,14 @@ export default async function handler(req, res) {
 
     const data = await r.json().catch(() => []);
 
-    // Send emails (log failures instead of swallowing)
+    // Send emails (log failures if any)
     Promise.allSettled([
       sendOwnerEmail({ name, email, niche, handle, source }),
       sendUserConfirmEmail({ name, email })
-    ]).then((results) => {
-      results.forEach((r, i) => {
-        if (r.status === 'rejected') {
-          console.error(i === 0 ? 'Owner email failed' : 'User email failed', r.reason);
+    ]).then(results => {
+      results.forEach((x, i) => {
+        if (x.status === 'rejected') {
+          console.error(i === 0 ? 'Owner email failed' : 'User email failed', x.reason);
         }
       });
     });
