@@ -5,26 +5,24 @@ async function getTransporter() {
   const {
     SMTP_HOST, SMTP_PORT, SMTP_SECURE,
     SMTP_USER,
-    SMTP_PASS,        // preferred
-    SMTP_PASSWORD     // legacy name, if you happened to set this
+    SMTP_PASS,        // preferred env name
+    SMTP_PASSWORD     // legacy env name (fallback)
   } = process.env;
 
-  const pass = SMTP_PASSWORD || SMTP_PASS; // ← now safely read from process.env
+  const pass = SMTP_PASS || SMTP_PASSWORD; // <- ALWAYS read from process.env
   if (!SMTP_HOST || !SMTP_USER || !pass) {
-    console.error('SMTP env missing:', {
-      hasHost: !!SMTP_HOST,
-      hasUser: !!SMTP_USER,
-      hasPass: !!pass
-    });
+    console.error('SMTP env missing', { hasHost: !!SMTP_HOST, hasUser: !!SMTP_USER, hasPass: !!pass });
     return null;
   }
 
   const nodemailer = await import('nodemailer');
   const tx = nodemailer.createTransport({
-    host: SMTP_HOST,                                // e.g. in-v3.mailjet.com
+    host: SMTP_HOST,                              // e.g., in-v3.mailjet.com
     port: Number(SMTP_PORT || 587),
     secure: String(SMTP_SECURE || 'false') === 'true',
-    auth: { user: SMTP_USER, pass }
+    auth: { user: SMTP_USER, pass },
+    // optional debug:
+    // logger: true, debug: true
   });
 
   try { await tx.verify(); } catch (e) {
@@ -155,17 +153,12 @@ export default async function handler(req, res) {
     const data = await r.json().catch(() => []);
 
     // Send emails (log failures if any)
-    Promise.allSettled([
-      sendOwnerEmail({ name, email, niche, handle, source }),
-      sendUserConfirmEmail({ name, email })
-    ]).then(results => {
-      results.forEach((x, i) => {
-        if (x.status === 'rejected') {
-          console.error(i === 0 ? 'Owner email failed' : 'User email failed', x.reason);
-        }
-      });
-    });
-
+    try {
+      await sendOwnerEmail({ name, email, niche, handle, source });
+      await sendUserConfirmEmail({ name, email });
+    } catch (err) {
+      console.error('Email sending threw:', err);
+    }
     return res.status(200).json({ ok: true, record: Array.isArray(data) ? data[0] : null });
   } catch (e) {
     if (e && e.name === 'AbortError') return res.status(504).json({ error: 'Upstream timeout' });
