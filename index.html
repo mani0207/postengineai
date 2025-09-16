@@ -151,13 +151,19 @@ style="background:rgba(0,0,0,0.08);backdrop-filter:blur(6px);-webkit-backdrop-fi
                   <option value="Local Business">Local Business</option>
                 </select>
               </label>
+              <!-- Added controls -->
+              <div class="flex items-center gap-2 ml-auto">
+                <button id="prevDemo" class="px-3 py-1 rounded-lg border border-theme hover:opacity-80" aria-label="Previous">◀</button>
+                <span id="demoStatus" class="text-xs opacity-70">1 / 1</span>
+                <button id="nextDemo" class="px-3 py-1 rounded-lg border border-theme hover:opacity-80" aria-label="Next">▶</button>
+              </div>
             </div>
 
-            <div id="demoOutput" class="mt-4 grid gap-3 text-sm">
+            <div id="demoOutput" class="mt-4 grid gap-3 text-base md:text-lg">
               <!-- Three slots that we "type into" -->
-              <div class="p-3 rounded-xl border border-theme"><span class="typing-caret" id="line1"></span></div>
-              <div class="p-3 rounded-xl border border-theme"><span class="typing-caret" id="line2"></span></div>
-              <div class="p-3 rounded-xl border border-theme"><span class="typing-caret" id="line3"></span></div>
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line1"></span></div>
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line2"></span></div>
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line3"></span></div>
             </div>
           </div>
         </div>
@@ -328,22 +334,62 @@ style="background:rgba(0,0,0,0.08);backdrop-filter:blur(6px);-webkit-backdrop-fi
       "Fitness": [
         "Crush your Monday workout 💪 Start strong, finish stronger. #FitnessGoals #MondayMotivation",
         "Form over ego. Lighter weight, deeper focus. Your future self will thank you. #GymTips #Consistency",
-        "Small wins stack up. Today’s 1% better becomes next month’s breakthrough. #Discipline #Progress"
+        "Small wins stack up. Today’s 1% better becomes next month’s breakthrough. #Discipline #Progress",
+        "Sweat today, shine tomorrow ✨ #NoExcuses #FitLife",
+        "Not every workout will be perfect, but every rep counts. #KeepGoing #Strength",
+        "Fuel your body like you love it 🥗 #EatClean #TrainHard",
+        "Chasing endorphins, not perfection. #HappyWorkout",
+        "Your competition is yesterday’s you. #ProgressOverPerfection",
+        "Consistency beats motivation. Show up. #DailyGrind",
+        "Cardio clears the mind, weights build the body. #Balance",
+        "Don’t wait for results, create them. #FitJourney",
+        "Rest is part of progress. Sleep = gains 💤 #RecoveryDay",
+        "Every set is an investment in your future self. #Discipline"
       ],
       "Food": [
         "Sunday brunch is the new Friday night 🍳 What’s on your plate? #BrunchClub #Foodie",
         "Cook once, eat twice. Leftovers = tomorrow’s win. #MealPrep #SmartCooking",
-        "Spice level: adventure 🌶️ Try something new today! #HomeCooking #FoodLove"
+        "Spice level: adventure 🌶️ Try something new today! #HomeCooking #FoodLove",
+        "Good food = good mood 🍲 #HappinessServed",
+        "Plating is half the taste 😍 #FoodPhotography",
+        "A little butter never hurt anyone 🧈 #ComfortFood",
+        "Taste buds deserve a vacation 🌴 Try world flavors at home.",
+        "Coffee before talkie ☕ #MorningFuel",
+        "Street food > fancy food, sometimes. #FoodieLife",
+        "Cooking is therapy, dishes are the price. #ChefAtHome",
+        "Every bite is a memory 🍕 #FoodLove",
+        "Dessert is not optional 🍰 #SweetTooth",
+        "Season it with love ❤️ #HomeCooking"
       ],
       "Pets": [
         "Your dog’s tail is today’s happiness meter 🐾 Show me that wag! #DogLife #PetLovers",
         "Cat naps: the ultimate productivity hack 💤 #CatLife #CozyVibes",
-        "They don’t need perfect—just your time. Take a walk together. #PetCare #DailyJoy"
+        "They don’t need perfect—just your time. Take a walk together. #PetCare #DailyJoy",
+        "Wet noses, warm hearts ❤️ #DogMom #DogDad",
+        "A meow is worth a thousand words. #CatPerson",
+        "Adopt, don’t shop 🐶🐱 #RescueLove",
+        "Every fetch is quality time 🎾 #PuppyLove",
+        "Zoomies are proof of happiness 😂 #PetJoy",
+        "Life’s better with paw prints on your floor.",
+        "Food disappears, tails wag = true love.",
+        "Cuddles > therapy sessions 🐾 #Healing",
+        "Pets teach unconditional love. #LifeLessons",
+        "Show me your pet’s goofy side! #PetVibes"
       ],
       "Local Business": [
         "Your regulars are your superpower ❤️ Say hi, remember names, build community. #ShopLocal #SmallBiz",
         "Behind the scenes matters. Show your process—customers love it. #SupportLocal #MadeHere",
-        "One post a day keeps invisibility away. Consistency wins. #MarketingTips #LocalBiz"
+        "One post a day keeps invisibility away. Consistency wins. #MarketingTips #LocalBiz",
+        "People buy stories, not just products. Tell yours. #BrandStory",
+        "Celebrate your milestones with your customers 🎉 #BizLove",
+        "Highlight your team—they are your heroes. #SmallBizStrong",
+        "A smile is your best marketing tool 😄 #CustomerLove",
+        "Local first. Global second. 🌎 #CommunityPride",
+        "Reply fast, build trust 📨 #CustomerCare",
+        "Consistency in branding builds recognition 🖌️ #Marketing101",
+        "Run a poll, ask a question—engagement grows trust. #SmallBizTips",
+        "Your vibe attracts your tribe ✨ #LocalSupport",
+        "One loyal customer is worth a thousand ads. #Retention"
       ]
     };
 
