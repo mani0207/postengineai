@@ -1,7 +1,4 @@
 {
-    "redirects": [
-      { "source": "/(.*)", "has": [{ "type": "host", "value": "www.postengineai.com" }], "destination": "https://postengineai.com/$1", "permanent": true }
-    ],
     "headers": [
       {
         "source": "/(.*)",
