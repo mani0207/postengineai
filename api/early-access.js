@@ -1,14 +1,14 @@
 // api/early-access.js
 
 // ---------- SMTP (Gmail) helpers ----------
+// --- Mailjet (SMTP) transporter ---
 async function getTransporter() {
   const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) return null;
-  const nodemailer = await import('nodemailer'); // dynamic import for serverless
+  const nodemailer = await import('nodemailer');
   return nodemailer.createTransport({
     host: SMTP_HOST,
-    port: Number(SMTP_PORT || 465),
-    secure: String(SMTP_SECURE || 'true') === 'true',
+    port: Number(SMTP_PORT || 587),
+    secure: String(SMTP_SECURE || 'false') === 'true',
     auth: { user: SMTP_USER, pass: SMTP_PASS }
   });
 }
