@@ -2,19 +2,36 @@
 
 // ---------- Mailjet (SMTP) transporter ----------
 async function getTransporter() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
+  const {
+    SMTP_HOST, SMTP_PORT, SMTP_SECURE,
+    SMTP_USER,
+    SMTP_PASS,        // preferred
+    SMTP_PASSWORD     // legacy name, if you happened to set this
+  } = process.env;
+
+  const pass = SMTP_PASSWORD || SMTP_PASS; // ← now safely read from process.env
+  if (!SMTP_HOST || !SMTP_USER || !pass) {
+    console.error('SMTP env missing:', {
+      hasHost: !!SMTP_HOST,
+      hasUser: !!SMTP_USER,
+      hasPass: !!pass
+    });
+    return null;
+  }
+
   const nodemailer = await import('nodemailer');
   const tx = nodemailer.createTransport({
-    host: SMTP_HOST,                    // in-v3.mailjet.com
-    port: Number(SMTP_PORT || 587),     // 587 (TLS) or 465 (SSL)
+    host: SMTP_HOST,                                // e.g. in-v3.mailjet.com
+    port: Number(SMTP_PORT || 587),
     secure: String(SMTP_SECURE || 'false') === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASSWORD || SMTP_PASS } // support either var name
+    auth: { user: SMTP_USER, pass }
   });
-  // Optional: verify on cold start; comment out if noisy
-  try { await tx.verify(); } catch (e) { console.error('SMTP verify failed:', e?.message || e); }
+
+  try { await tx.verify(); } catch (e) {
+    console.error('SMTP verify failed:', e?.message || e);
+  }
   return tx;
 }
-
 async function sendOwnerEmail({ name, email, niche, handle, source }) {
   try {
     const tx = await getTransporter(); if (!tx) return;
