@@ -270,6 +270,8 @@
         <div>
           <form id="ea-form" action="/api/early-access" method="POST" class="card p-6 rounded-2xl border border-theme shadow-sm">
             <label class="block text-sm font-medium">Name</label>
+            <!-- Honeypot: humans never see this; bots often fill it -->
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" style="display:none !important;" />
             <input name="name" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="Jane Doe" />
             <label class="block text-sm font-medium mt-4">Email</label>
             <input name="email" type="email" required class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="you@example.com" />
@@ -300,6 +302,7 @@
                 niche: form.niche.value,
                 handle: form.handle.value,
                 source: form.source.value || 'Landing Page',
+                website: form.website ? form.website.value : "" 
               };
               try {
                 const res = await fetch(form.action, {
