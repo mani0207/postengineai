@@ -1,61 +1,68 @@
 // api/early-access.js
 
-// ---------- SMTP (Gmail) helpers ----------
-// --- Mailjet (SMTP) transporter ---
+// ---------- Mailjet (SMTP) transporter ----------
 async function getTransporter() {
   const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS } = process.env;
   const nodemailer = await import('nodemailer');
   return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
+    host: SMTP_HOST,                    // in-v3.mailjet.com
+    port: Number(SMTP_PORT || 587),     // 587 (TLS) or 465 (SSL)
     secure: String(SMTP_SECURE || 'false') === 'true',
     auth: { user: SMTP_USER, pass: SMTP_PASS }
   });
 }
 
 async function sendOwnerEmail({ name, email, niche, handle, source }) {
-  const tx = await getTransporter(); if (!tx) return;
-  const from = process.env.NOTIFY_FROM || process.env.SMTP_USER;
-  const to = process.env.NOTIFY_TO || 'manisundar.92@gmail.com';
-  await tx.sendMail({
-    from, to,
-    subject: `New early-access signup: ${email}`,
-    html: `
-      <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5;">
-        <h2 style="margin:0 0 8px">New signup</h2>
-        <p><strong>Name:</strong> ${name || '-'}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Niche:</strong> ${niche || '-'}</p>
-        <p><strong>Handle:</strong> ${handle || '-'}</p>
-        <p><strong>Source:</strong> ${source || '-'}</p>
-      </div>`
-  });
+  try {
+    const tx = await getTransporter(); if (!tx) return;
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // must be a VERIFIED sender in Mailjet
+    const to = process.env.NOTIFY_TO || 'manisundar.92@gmail.com';
+    await tx.sendMail({
+      from, to,
+      subject: `New early-access signup: ${email}`,
+      html: `
+        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5;">
+          <h2 style="margin:0 0 8px">New signup</h2>
+          <p><strong>Name:</strong> ${name || '-'}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Niche:</strong> ${niche || '-'}</p>
+          <p><strong>Handle:</strong> ${handle || '-'}</p>
+          <p><strong>Source:</strong> ${source || '-'}</p>
+        </div>`
+    });
+  } catch (err) {
+    console.error('Owner email failed:', err);
+  }
 }
 
 async function sendUserConfirmEmail({ name, email }) {
-  const tx = await getTransporter(); if (!tx || !email) return;
-  const from = process.env.NOTIFY_FROM || process.env.SMTP_USER;
-  await tx.sendMail({
-    from,
-    to: email,
-    subject: `You're on the waitlist — postEngineAI`,
-    html: `
-      <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.6;">
-        <h2 style="margin:0 0 10px;">Thanks for joining early access${name ? `, ${name}` : ''}!</h2>
-        <p>We’ll email your invite as soon as your spot opens up.</p>
-        <ul>
-          <li>What you’ll get: caption ideas, stories, and hashtags tailored to your niche.</li>
-          <li>Your price stays locked at <strong>$9/mo</strong> as an early member.</li>
-        </ul>
-        <p style="margin-top:12px;">Questions? Just reply to this email.</p>
-        <p style="margin-top:20px;">— Team postEngineAI</p>
-      </div>`
-  });
+  try {
+    const tx = await getTransporter(); if (!tx || !email) return;
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // must be VERIFIED in Mailjet
+    await tx.sendMail({
+      from,
+      to: email,
+      subject: `You're on the waitlist — postEngineAI`,
+      html: `
+        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.6;">
+          <h2 style="margin:0 0 10px;">Thanks for joining early access${name ? `, ${name}` : ''}!</h2>
+          <p>We’ll email your invite as soon as your spot opens up.</p>
+          <ul>
+            <li>Caption ideas, stories, and hashtags tailored to your niche.</li>
+            <li>Your price is locked at <strong>$9/mo</strong> as an early member.</li>
+          </ul>
+          <p style="margin-top:12px;">Questions? Just reply to this email.</p>
+          <p style="margin-top:20px;">— Team postEngineAI</p>
+        </div>`
+    });
+  } catch (err) {
+    console.error('User confirmation email failed:', err);
+  }
 }
 
 // ---------- Main handler ----------
 export default async function handler(req, res) {
-  // CORS (adjust ORIGIN for staging if needed)
+  // CORS
   const ORIGIN = 'https://postengineai.com';
   res.setHeader('Access-Control-Allow-Origin', ORIGIN);
   res.setHeader('Vary', 'Origin');
@@ -71,9 +78,9 @@ export default async function handler(req, res) {
     for await (const chunk of req) chunks.push(chunk);
     const body = JSON.parse(Buffer.concat(chunks).toString() || '{}');
 
-    // Honeypot: add <input name="website" class="hidden"> to your form
+    // Honeypot
     if (typeof body.website === 'string' && body.website.trim() !== '') {
-      return res.status(200).json({ ok: true }); // pretend success for bots
+      return res.status(200).json({ ok: true });
     }
 
     const { name = '', email = '', niche = '', handle = '', source = 'Landing Page' } = body;
@@ -81,6 +88,18 @@ export default async function handler(req, res) {
     // Basic email validation
     const emailOk = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || ''));
     if (!emailOk(email)) return res.status(400).json({ error: 'Invalid email' });
+
+    // --- Capture IP/UA + (optional) Geo from Vercel ---
+    const ip =
+      (req.headers['x-forwarded-for'] || '')
+        .toString()
+        .split(',')[0]
+        .trim() || req.socket?.remoteAddress || null;
+
+    const ua = (req.headers['user-agent'] || '').toString() || null;
+    const country = (req.headers['x-vercel-ip-country'] || '').toString() || null;
+    const region  = (req.headers['x-vercel-ip-country-region'] || '').toString() || null;
+    const city    = (req.headers['x-vercel-ip-city'] || '').toString() || null;
 
     // Supabase env
     const url = process.env.SUPABASE_URL;
@@ -103,25 +122,36 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         Prefer: 'return=representation,resolution=merge-duplicates'
       },
-      body: JSON.stringify([{ name, email, niche, handle, source }])
+      body: JSON.stringify([{
+        name, email, niche, handle, source,
+        ip, ua, country, region, city
+      }])
     }).finally(() => clearTimeout(timeout));
 
     if (!r.ok) {
       const detail = await r.text().catch(() => '');
+      console.error('Supabase insert failed:', detail);
       return res.status(502).json({ error: 'Supabase insert failed', detail });
     }
 
     const data = await r.json().catch(() => []);
 
-    // Fire-and-forget emails (don’t block user)
+    // Send emails (log failures instead of swallowing)
     Promise.allSettled([
       sendOwnerEmail({ name, email, niche, handle, source }),
       sendUserConfirmEmail({ name, email })
-    ]).catch(() => {});
+    ]).then((results) => {
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') {
+          console.error(i === 0 ? 'Owner email failed' : 'User email failed', r.reason);
+        }
+      });
+    });
 
     return res.status(200).json({ ok: true, record: Array.isArray(data) ? data[0] : null });
   } catch (e) {
     if (e && e.name === 'AbortError') return res.status(504).json({ error: 'Upstream timeout' });
+    console.error('Server error:', e);
     return res.status(500).json({ error: 'Server error', detail: String(e) });
   }
 }
