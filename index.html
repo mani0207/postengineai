@@ -3,215 +3,138 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>postEngineAI Demo — 20 Free Captions</title>
+  <title>postEngineAI — Real Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
     .ig-gradient{background-image:var(--ig-grad)}
-    .chip{background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.4rem .7rem;border-radius:.8rem;font-size:.9rem}
+    .chip{background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.35rem .7rem;border-radius:.8rem;font-size:.9rem}
     .cap-card{background:#0e141b;border:1px solid #1b2430;border-radius:1rem;padding:1rem;color:#e5e7eb}
     .cap-actions button{background:#101826;border:1px solid #1b2430;color:#dbe4ff;padding:.45rem .7rem;border-radius:.7rem;font-size:.85rem}
     .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   </style>
 </head>
 <body class="bg-slate-950 text-white">
-
-  <!-- Header -->
   <header class="sticky top-0 z-40 border-b border-white/10 glass">
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
       <a href="/" class="flex items-center gap-2">
         <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
         <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
       </a>
-      <a href="#signup" id="openTrial" class="text-sm underline">Start free trial</a>
+      <a href="/#pricing" class="text-sm underline">Pricing</a>
     </div>
   </header>
 
-  <!-- Hero -->
   <section class="ig-gradient">
-    <div class="max-w-5xl mx-auto px-4 py-16 sm:py-20">
-      <h1 class="text-4xl sm:text-5xl font-bold leading-tight">Try postEngineAI — <span class="text-yellow-200">20 free captions</span></h1>
-      <p class="mt-3 text-lg/7 max-w-2xl">Describe your niche or post idea. Get multiple captions instantly. When your free credits are out, upgrade for <b>$6/month</b>.</p>
+    <div class="max-w-5xl mx-auto px-4 py-14">
+      <h1 class="text-3xl sm:text-4xl font-bold">Real demo — powered by ChatGPT</h1>
+      <p class="mt-2 text-slate-100">You have 20 free captions. Each generation uses 4 credits.</p>
 
-      <!-- Trial status -->
-      <div id="trialBar" class="mt-6 text-sm bg-black/30 border border-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-2">
-        <span>Free captions left:</span>
-        <span id="credits" class="font-semibold">—</span>
+      <div class="mt-5 text-sm bg-black/30 border border-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-2">
+        <span>Credits left:</span> <span id="credits">—</span>
       </div>
 
-      <!-- Preview card -->
-      <div class="mt-8 p-6 rounded-2xl border border-white/10 glass">
-        <label for="topicInput" class="block text-sm opacity-90">Describe your niche or post idea</label>
-        <input id="topicInput" type="text" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40" placeholder="e.g., pet grooming tips, morning workout motivation, local café launch">
+      <div class="mt-6 p-6 rounded-2xl border border-white/10 glass">
+        <label class="block text-sm opacity-90">Describe your niche or post idea</label>
+        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40" placeholder="e.g., pet grooming tips, morning workout motivation" />
+        
+        <div class="mt-3 flex items-center gap-3">
+          <input id="img" type="file" accept="image/*" class="text-sm">
+          <span class="opacity-80 text-sm">Optional: upload an image to tailor the caption</span>
+        </div>
+
         <div class="flex flex-wrap gap-2 mt-3">
           <button class="chip">Pet grooming tips</button>
           <button class="chip">Morning workout motivation</button>
           <button class="chip">Homemade pizza reel</button>
           <button class="chip">Salon promo for summer</button>
-          <button class="chip">Real estate open house</button>
         </div>
+
         <div class="mt-5 flex items-center gap-3">
-          <button id="genBtn" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate captions</button>
-          <span class="text-sm opacity-80">Each generation uses <b>4</b> credits</span>
+          <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
+          <span id="hint" class="opacity-80 text-sm"></span>
         </div>
-        <div id="results" class="mt-6 grid gap-4"></div>
+
+        <div id="preview" class="mt-4"></div>
+        <div id="out" class="mt-6 grid gap-4"></div>
       </div>
     </div>
   </section>
 
-  <!-- Paywall Modal -->
-  <div id="payModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 p-4">
-    <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6">
-      <h3 class="text-xl font-semibold">You’ve used your 20 free captions</h3>
-      <p class="mt-2 text-slate-300">Unlock unlimited captions, hashtag suggestions, and updates.</p>
-      <ul class="mt-3 text-sm text-slate-300 list-disc ml-5">
-        <li>$6/month · cancel anytime</li>
-        <li>7‑day money‑back guarantee</li>
-      </ul>
-      <div class="mt-5 flex flex-col sm:flex-row gap-2">
-        <a id="goPricing" href="/#pricing" class="flex-1 text-center rounded-xl bg-white text-black px-4 py-2 font-medium">Continue ($6/mo)</a>
-        <button id="closePay" class="flex-1 rounded-xl border border-white/20 px-4 py-2">Maybe later</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Registration Modal -->
-  <div id="regModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 p-4">
-    <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6">
-      <h3 class="text-xl font-semibold">Start your free trial</h3>
-      <p class="mt-1 text-sm text-slate-300">Enter your email to receive your invite and 20 free captions.</p>
-      <form id="regForm" class="mt-4 grid gap-3">
-        <input name="website" class="hidden" autocomplete="off" tabindex="-1" aria-hidden="true">
-        <input name="name"  class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="Name (optional)">
-        <input name="email" type="email" required class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="you@example.com">
-        <select name="niche" class="rounded-xl bg-black/30 border border-white/10 px-4 py-2">
-          <option>Pets</option><option>Fitness</option><option>Food</option><option>Local Business</option><option>Other</option>
-        </select>
-        <input name="handle" class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="@yourhandle (optional)">
-        <button class="rounded-xl bg-white text-black px-4 py-2 font-medium">Start trial</button>
-        <p id="regOk" class="hidden text-green-400 text-sm">You're in! Credits added.</p>
-        <p id="regErr" class="hidden text-red-400 text-sm">Something went wrong.</p>
-      </form>
-    </div>
-  </div>
-
   <script>
-    // ---- trial state (local) ----
-    const CREDITS_KEY = 'pe_trial_credits';
-    const ANON_KEY = 'pe_anon';
-    function setCookie(k,v,days){ const d=new Date(); d.setTime(d.getTime()+days*864e5); document.cookie = k+'='+encodeURIComponent(v)+'; expires='+d.toUTCString()+'; path=/; SameSite=Lax'; }
-    function getCookie(k){ return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;},{})[k]; }
-    if(!getCookie(ANON_KEY)){ setCookie(ANON_KEY, (self.crypto?.randomUUID?.()||String(Math.random()).slice(2)), 365); }
-    if(localStorage.getItem(CREDITS_KEY)===null){ localStorage.setItem(CREDITS_KEY,'0'); } // gated until registration
+    const C_KEY='pe_anon', CR_KEY='pe_trial_credits';
+    function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
+    function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
+    if(!getCookie(C_KEY)){ setCookie(C_KEY, (crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), 365); }
+    if(localStorage.getItem(CR_KEY)===null){ localStorage.setItem(CR_KEY,'20'); }
 
     const creditsEl = document.getElementById('credits');
-    const payModal = document.getElementById('payModal');
-    const closePay = document.getElementById('closePay');
-    const regModal = document.getElementById('regModal');
-    const openTrial = document.getElementById('openTrial');
-    const regForm = document.getElementById('regForm');
+    const topic = document.getElementById('topic');
+    const img = document.getElementById('img');
+    const go = document.getElementById('go');
+    const hint = document.getElementById('hint');
+    const out = document.getElementById('out');
+    const preview = document.getElementById('preview');
+    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{ topic.value=b.textContent; }));
 
-    function getCredits(){ return parseInt(localStorage.getItem(CREDITS_KEY)||'0',10); }
-    function setCredits(n){ localStorage.setItem(CREDITS_KEY,String(Math.max(0,n))); renderCredits(); }
+    function getCredits(){ return parseInt(localStorage.getItem(CR_KEY)||'0',10); }
+    function setCredits(n){ localStorage.setItem(CR_KEY,String(Math.max(0,n))); renderCredits(); }
     function renderCredits(){ creditsEl.textContent = getCredits(); }
+    renderCredits();
 
-    function show(el){ el.classList.remove('hidden'); el.classList.add('flex'); }
-    function hide(el){ el.classList.add('hidden'); el.classList.remove('flex'); }
-
-    // ---- registration flow ----
-    openTrial.addEventListener('click', (e)=>{ e.preventDefault(); show(regModal); });
-    regForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const btn = regForm.querySelector('button'); btn.disabled = true; btn.textContent='Starting…';
-      const data = {
-        name: regForm.name.value,
-        email: regForm.email.value,
-        niche: regForm.niche.value,
-        handle: regForm.handle.value,
-        source: 'Demo Trial',
-        website: regForm.website.value || ""
-      };
-      try{
-        const r = await fetch('/api/early-access', {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
-        });
-        if(r.ok){
-          // grant 20 credits
-          setCredits(20);
-          document.getElementById('regOk').classList.remove('hidden');
-          setTimeout(()=>{ hide(regModal); }, 800);
-        }else{
-          document.getElementById('regErr').classList.remove('hidden');
-        }
-      }catch{
-        document.getElementById('regErr').classList.remove('hidden');
-      }finally{
-        btn.disabled=false; btn.textContent='Start trial';
-      }
+    img.addEventListener('change', ()=>{
+      out.innerHTML=''; preview.innerHTML='';
+      const file = img.files?.[0]; if(!file) return;
+      const url = URL.createObjectURL(file);
+      const el = document.createElement('img'); el.src = url; el.className='mt-2 h-32 rounded-lg border border-white/10 object-cover';
+      preview.appendChild(el);
     });
 
-    // ---- caption generator (client-side mock) ----
-    const topicEl=document.getElementById('topicInput');
-    const genBtn=document.getElementById('genBtn');
-    const chips=document.querySelectorAll('.chip');
-    const resultsEl=document.getElementById('results');
-
-    const openers=["No excuses, just results","Small steps, big wins","Consistency beats motivation","Make it fun, make it daily","From idea to post in seconds"];
-    const closers=["Let’s go! 🚀","You got this. ✨","One step at a time. 💪","Tag a friend to try this. 🤝","Save this for later! 📌"];
-    const tagSets=[["#creator","#social","#reels"],["#daily","#inspo","#goals"],["#caption","#trending","#growth"],["#marketing","#content","#ideas"],["#tips","#howto","#today"]];
-
-    function titleCase(s){return s.replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase());}
-    function makeCaptions(topic){
-      const base=topic.replace(/\s+/g,' ').trim(); if(!base) return [];
-      const t=titleCase(base), out=[];
-      for(let i=0;i<4;i++){
-        const o=openers[(i+base.length)%openers.length];
-        const c=closers[(i*2+base.length)%closers.length];
-        const tags=tagSets[(i+base.length)%tagSets.length].join(' ');
-        const em=["✨","🔥","💡","💪","🐾","🍕","🎯","📸"][(i+base.length)%8];
-        out.push(`${em} ${t}\n${o}. ${c}\n${tags}`);
-      }
-      return out;
-    }
-
-    function render(captions){
-      resultsEl.innerHTML='';
-      if(!captions.length){ resultsEl.innerHTML='<p class="opacity-80">Type a few words above and click Generate.</p>'; return; }
-      captions.forEach(c=>{
-        const card=document.createElement('div'); card.className='cap-card';
-        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=c;
-        const actions=document.createElement('div'); actions.className='cap-actions flex gap-2';
-        const copyBtn=document.createElement('button'); copyBtn.textContent='📋 Copy';
-        copyBtn.onclick=async()=>{ try{await navigator.clipboard.writeText(c);copyBtn.textContent='✅ Copied';setTimeout(()=>copyBtn.textContent='📋 Copy',1200);}catch{alert('Copy failed');} };
-        const waBtn=document.createElement('button'); waBtn.textContent='📤 Share';
-        waBtn.onclick=()=>{ const url='https://wa.me/?text='+encodeURIComponent(c); window.open(url,'_blank','noopener'); };
-        actions.appendChild(copyBtn); actions.appendChild(waBtn);
-        card.appendChild(pre); card.appendChild(actions);
-        resultsEl.appendChild(card);
+    async function fileToDataUrl(file){
+      return new Promise((resolve,reject)=>{
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
       });
     }
 
-    function generateNow(){
-      const credits = getCredits();
-      if (credits <= 0) { show(payModal); return; }
-      const topic = topicEl.value.trim();
-      if (!topic) { topicEl.focus(); return; }
-      // each generation uses 4 credits
-      const cost = 4;
-      if (credits < cost) { show(payModal); return; }
-      const caps = makeCaptions(topic);
-      setCredits(credits - cost);
-      render(caps);
-    }
-
-    genBtn.addEventListener('click', generateNow);
-    topicEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); generateNow(); }});
-    chips.forEach(ch=>ch.addEventListener('click', ()=>{ topicEl.value = ch.textContent; generateNow(); }));
-    closePay.addEventListener('click', ()=> hide(payModal));
-    document.getElementById('goPricing').addEventListener('click', ()=> hide(payModal));
-
-    // initialize UI
-    render([]); renderCredits();
+    go.addEventListener('click', async ()=>{
+      out.innerHTML=''; hint.textContent='Generating…';
+      let imageDataUrl = '';
+      const file = img.files?.[0];
+      if (file) imageDataUrl = await fileToDataUrl(file);
+      try{
+        const res = await fetch('/api/generate', {
+          method:'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: topic.value, imageDataUrl })
+        });
+        if (res.status === 402) {
+          const j = await res.json();
+          hint.textContent = 'Free credits used up. Please upgrade.';
+          setCredits(j.remaining ?? getCredits());
+          return;
+        }
+        const j = await res.json();
+        if (!res.ok) throw new Error(j.error || 'Server error');
+        setCredits(j.remaining ?? getCredits()); // server may control
+        (j.captions||[]).forEach(text=>{
+          const card=document.createElement('div'); card.className='cap-card';
+          const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
+          const actions=document.createElement('div'); actions.className='cap-actions flex gap-2';
+          const copy=document.createElement('button'); copy.textContent='📋 Copy';
+          copy.onclick=async()=>{await navigator.clipboard.writeText(text);copy.textContent='✅ Copied';setTimeout(()=>copy.textContent='📋 Copy',1200);};
+          const share=document.createElement('button'); share.textContent='📤 Share'; share.onclick=()=>{ const u='https://wa.me/?text='+encodeURIComponent(text); window.open(u,'_blank','noopener'); };
+          actions.appendChild(copy); actions.appendChild(share);
+          card.appendChild(pre); card.appendChild(actions);
+          out.appendChild(card);
+        });
+        hint.textContent='';
+      }catch(e){
+        hint.textContent='Error: '+e.message;
+      }
+    });
   </script>
 </body>
 </html>
