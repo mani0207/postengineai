@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>postEngineAI – AI captions & story ideas for your niche</title>
+  <link rel="icon" href="/favicon.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Light theme (default variables) */
+    :root{
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #475569;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --cta: #1877F2;          /* Facebook blue */
+      --cta-contrast: #ffffff;
+      --ig-grad: linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);
+      --badge: #FF0000;        /* YouTube red */
+      --glass-bg: rgba(255,255,255,0.12);
+      --soft-border: rgba(0,0,0,0.08);
+    }
+    /* Dark theme overrides */
+    .theme-dark{
+      --bg: #0F0F0F;
+      --text: #E5E7EB;
+      --muted: #A8B3CF;
+      --card: #111418;
+      --border: #1f2937;
+      --cta: #3EA6FF;          /* YouTube-ish blue accent */
+      --cta-contrast: #081018;
+      --glass-bg: rgba(17,20,24,0.7);
+      --soft-border: rgba(255,255,255,0.18);
+    }
+
+    /* Global theming hooks */
+    html, body { background: var(--bg); color: var(--text); }
+    .muted{ color: var(--muted); }
+    .card{ background: var(--card); border-color: var(--border); }
+    .btn-primary{ background: var(--cta); color: var(--cta-contrast); }
+    .btn-primary:hover{ filter: brightness(0.95); }
+    .border-theme{ border-color: var(--border); }
+    .ig-gradient{ background-image: var(--ig-grad); }
+    .badge-new{ background: var(--badge); color:#fff; }
+    .themed-input{ background: var(--card); color: var(--text); border-color: var(--border); }
+    .themed-input::placeholder{ color: #9CA3AF; }
+
+    /* Smooth theme transition */
+    html, body, header, footer,
+    .card, .border-theme, .btn-primary,
+    input, select, textarea, button {
+      transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+
+    /* Typing caret */
+    .typing-caret::after{
+      content: " ";
+      display: inline-block;
+      width: 8px;
+      height: 1.2em;
+      margin-left: 2px;
+      background: currentColor;
+      animation: blink 1s steps(1,end) infinite;
+      vertical-align: -2px;
+      opacity: .55;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+
+  <!-- Canonical + Social -->
+  <link rel="canonical" href="https://postengineai.com/">
+  <meta name="description" content="AI captions & story ideas tailored for your niche — saves you 5+ hours every week.">
+  <meta name="theme-color" content="#0ea5e9">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://postengineai.com/">
+  <meta property="og:title" content="postEngineAI — Never run out of captions again">
+  <meta property="og:description" content="AI captions & story ideas tailored for your niche — saves you 5+ hours every week.">
+  <meta property="og:image" content="https://postengineai.com/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="postEngineAI — Never run out of captions again">
+  <meta name="twitter:description" content="AI captions & story ideas tailored for your niche — saves you 5+ hours every week.">
+  <meta name="twitter:image" content="https://postengineai.com/og-image.png">
+  <script defer data-domain="postengineai.com" src="https://plausible.io/js/script.js"></script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "postEngineAI",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "AI captions & story ideas tailored for your niche.",
+      "offers": {
+        "@type": "Offer",
+        "price": "9.00",
+        "priceCurrency": "USD"
+      },
+      "url": "https://postengineai.com/"
+    }
+    </script>
+</head>
+
+<body class="antialiased">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-theme"
+    style="background:rgba(0,0,0,0.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-14 sm:h-16">
+
+        <!-- Left: Logo + Wordmark -->
+        <a href="/" class="flex items-center gap-2">
+          <img
+            src="/header-logo-tight.png"
+            alt="postEngineAI"
+            class="h-8 sm:h-12 md:h-16 w-auto object-contain align-middle"
+            loading="eager"
+            decoding="sync"
+          />
+          <span class="inline font-semibold text-sm sm:text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
+            postEngineAI
+          </span>
+        </a>
+
+        <!-- Right: desktop nav + always-visible theme + mobile menu button -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Desktop Nav -->
+          <nav class="hidden sm:flex items-center gap-4 text-sm">
+            <a href="#features" class="hover:opacity-80">Features</a>
+            <a href="#pricing" class="hover:opacity-80">Pricing</a>
+            <a href="#signup" class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</a>
+          </nav>
+
+          <!-- Theme toggle (always visible) -->
+          <button id="themeToggle" class="w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80 transition" aria-label="Toggle theme">
+            <span id="themeIcon">🌙</span>
+          </button>
+
+          <!-- Mobile hamburger -->
+          <button id="menuBtn" class="sm:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80 transition" aria-controls="mobileMenu" aria-expanded="false" aria-label="Open menu">
+            <!-- simple hamburger icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile menu panel -->
+    <div id="mobileMenu" class="sm:hidden hidden border-t border-theme bg-[var(--card)]">
+      <div class="max-w-6xl mx-auto px-4 py-3 text-sm">
+        <a href="#features" class="block py-2 hover:opacity-80">Features</a>
+        <a href="#pricing" class="block py-2 hover:opacity-80">Pricing</a>
+        <a href="#signup" class="block py-2">
+          <span class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="ig-gradient text-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">Stop stressing about captions. <span class="text-yellow-200">Let AI do the writing</span>.</h1>
+          <p class="mt-5 text-lg">Daily captions, story ideas, and hashtag suggestions — personalized for your niche (pets, fitness, food, or local business). Save <strong>5+ hours/week</strong>.</p>
+          <div class="mt-8 flex gap-3">
+            <a href="#signup" class="btn-primary rounded-xl px-5 py-3">Join Early Access – $9/mo</a>
+            <a href="#features" class="underline text-white">See how it works</a>
+          </div>
+        </div>
+
+        <!-- Interactive Preview Card -->
+        <div>
+          <div class="card p-6 rounded-2xl border border-theme shadow-sm" style="background:var(--glass-bg);">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div class="text-sm font-semibold">Preview</div>
+              <label class="text-xs sm:text-sm flex items-center gap-2">
+                <span class="opacity-80">Niche:</span>
+                <select id="demoNiche" class="themed-input rounded-lg px-2 py-1 text-sm">
+                  <option value="Fitness">Fitness</option>
+                  <option value="Food">Food</option>
+                  <option value="Pets">Pets</option>
+                  <option value="Local Business">Local Business</option>
+                </select>
+              </label>
+              <!-- Controls -->
+              <div class="flex items-center gap-2 ml-auto">
+                <button id="prevDemo" class="px-3 py-1 rounded-lg border border-theme hover:opacity-80" aria-label="Previous">◀</button>
+                <span id="demoStatus" class="text-xs opacity-70">1 / 1</span>
+                <button id="nextDemo" class="px-3 py-1 rounded-lg border border-theme hover:opacity-80" aria-label="Next">▶</button>
+              </div>
+            </div>
+
+            <div id="demoOutput" class="mt-4 grid gap-3 text-base md:text-lg">
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line1"></span></div>
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line2"></span></div>
+              <div class="p-4 md:p-5 rounded-xl border border-theme"><span class="typing-caret" id="line3"></span></div>
+            </div>
+          </div>
+        </div>
+        <!-- /Interactive Preview -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold">How postEngineAI helps you post faster</h2>
+        <p class="mt-2 muted">Lightweight workflow, results that feel on-brand.</p>
+      </div>
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="card p-6 rounded-2xl border border-theme">
+          <div class="text-lg font-semibold">Niche-tailored captions</div>
+          <p class="mt-2 muted">Pick your niche (pets, fitness, food, local biz) and get tone-matched captions and story ideas in seconds.</p>
+        </div>
+        <div class="card p-6 rounded-2xl border border-theme">
+          <div class="text-lg font-semibold">Hashtags that fit</div>
+          <p class="mt-2 muted">Suggested hashtags to boost reach without spam. Copy with one click.</p>
+        </div>
+        <div class="card p-6 rounded-2xl border border-theme">
+          <div class="text-lg font-semibold">Simple, fast workflow</div>
+          <p class="mt-2 muted">No bloated tools. Generate, copy, post. Save 5+ hours/week.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold">Simple pricing. No surprises.</h2>
+        <p class="mt-2 muted">One plan for early access. Upgrade paths coming soon.</p>
+      </div>
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <div class="card md:col-start-2 p-6 rounded-2xl border border-theme text-center">
+          <div class="flex justify-center items-center gap-2">
+            <span class="font-semibold">Starter</span>
+            <span class="badge-new text-xs px-2 py-0.5 rounded-full">New!</span>
+          </div>
+          <div class="mt-2 text-4xl font-bold">$9<span class="text-xl muted">/mo</span></div>
+          <ul class="mt-4 muted space-y-1">
+            <li>30–50 AI captions & ideas / month</li>
+            <li>Niche-specific hashtags</li>
+            <li>Save & copy with one click</li>
+            <li>Cancel anytime</li>
+          </ul>
+          <a href="#signup" class="btn-primary inline-block mt-6 px-4 py-3 rounded-xl w-full">Join Early Access</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup -->
+  <section id="signup" class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="grid lg:grid-cols-2 gap-10 items-start">
+        <div>
+          <h3 class="text-2xl font-bold">Join early access</h3>
+          <p class="mt-2 muted">Be among the first to try postEngineAI and lock in <strong>$9/month</strong> for life. We’ll email you when your invite is ready.</p>
+        </div>
+        <div>
+          <form id="ea-form" action="/api/early-access" method="POST" class="card p-6 rounded-2xl border border-theme shadow-sm">
+            <label class="block text-sm font-medium">Name</label>
+            <!-- Honeypot: humans never see this; bots often fill it -->
+            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" style="display:none !important;" />
+            <input name="name" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="Jane Doe" />
+            <label class="block text-sm font-medium mt-4">Email</label>
+            <input name="email" type="email" required class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="you@example.com" />
+            <label class="block text-sm font-medium mt-4">Niche</label>
+            <select name="niche" class="themed-input mt-1 w-full rounded-xl border px-3 py-2">
+              <option>Pets</option>
+              <option>Fitness</option>
+              <option>Food</option>
+              <option>Local Business</option>
+              <option>Other</option>
+            </select>
+            <label class="block text-sm font-medium mt-4">Instagram/TikTok Handle (optional)</label>
+            <input name="handle" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="@yourhandle" />
+            <input type="hidden" name="source" value="Landing Page" />
+            <button class="mt-6 w-full btn-primary rounded-xl px-4 py-3">Request Invite</button>
+            <p id="ea-success" class="hidden mt-3 text-sm" style="color:#22c55e;">Thanks! You’re on the list.</p>
+            <p id="ea-error" class="hidden mt-3 text-sm" style="color:#ef4444;">Oops, something went wrong.</p>
+          </form>
+          <script>
+            const form = document.getElementById('ea-form');
+            form.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const btn = form.querySelector('button');
+              btn.disabled = true; btn.textContent = 'Submitting…';
+              const data = {
+                name: form.name.value,
+                email: form.email.value,
+                niche: form.niche.value,
+                handle: form.handle.value,
+                source: form.source.value || 'Landing Page',
+                website: form.website ? form.website.value : "" 
+              };
+              try {
+                const res = await fetch(form.action, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data),
+                });
+                if (res.ok) {
+                  document.getElementById('ea-success').classList.remove('hidden');
+                  form.reset();
+                } else {
+                  document.getElementById('ea-error').classList.remove('hidden');
+                }
+              } catch {
+                document.getElementById('ea-error').classList.remove('hidden');
+              } finally {
+                btn.disabled = false; btn.textContent = 'Request Invite';
+              }
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="ig-gradient text-white py-12 text-center">
+    <h3 class="text-2xl sm:text-3xl font-bold">Ready to post faster with AI?</h3>
+    <div class="mt-6">
+      <a href="#signup" class="inline-flex items-center gap-2 rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">
+        Join Early Access
+        <span class="badge-new text-xs px-2 py-0.5 rounded-full">New!</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-theme py-10 text-center muted">
+    © <span id="year"></span> postEngineAI. All rights reserved.
+  </footer>
+
+  <!-- Theme, Menu, Year, and Interactive Preview Demo -->
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Theme toggle
+    const root = document.documentElement;
+    const body = document.body;
+    const toggleBtn = document.getElementById('themeToggle');
+    const icon = document.getElementById('themeIcon');
+
+    function applyTheme(mode){
+      const isDark = (mode === 'dark');
+      root.classList.toggle('theme-dark', isDark);
+      body.classList.toggle('theme-dark', isDark);
+      icon.textContent = isDark ? '🌙' : '🌞';
+    }
+    const savedTheme = localStorage.getItem('pe_theme') || 'dark';
+    applyTheme(savedTheme);
+    toggleBtn.addEventListener('click', () => {
+      const newMode = root.classList.contains('theme-dark') ? 'light' : 'dark';
+      localStorage.setItem('pe_theme', newMode);
+      applyTheme(newMode);
+    });
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('hidden') === false;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }));
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        mobileMenu.classList.add('hidden');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // ------- Interactive Preview Demo -------
+    const demoData = {
+      "Fitness": [
+        "Crush your Monday workout 💪 Start strong, finish stronger. #FitnessGoals #MondayMotivation",
+        "Form over ego. Lighter weight, deeper focus. Your future self will thank you. #GymTips #Consistency",
+        "Small wins stack up. Today’s 1% better becomes next month’s breakthrough. #Discipline #Progress",
+        "Sweat today, shine tomorrow ✨ #NoExcuses #FitLife",
+        "Not every workout will be perfect, but every rep counts. #KeepGoing #Strength",
+        "Fuel your body like you love it 🥗 #EatClean #TrainHard",
+        "Chasing endorphins, not perfection. #HappyWorkout",
+        "Your competition is yesterday’s you. #ProgressOverPerfection",
+        "Consistency beats motivation. Show up. #DailyGrind",
+        "Cardio clears the mind, weights build the body. #Balance",
+        "Don’t wait for results, create them. #FitJourney",
+        "Rest is part of progress. Sleep = gains 💤 #RecoveryDay",
+        "Every set is an investment in your future self. #Discipline"
+      ],
+      "Food": [
+        "Sunday brunch is the new Friday night 🍳 What’s on your plate? #BrunchClub #Foodie",
+        "Cook once, eat twice. Leftovers = tomorrow’s win. #MealPrep #SmartCooking",
+        "Spice level: adventure 🌶️ Try something new today! #HomeCooking #FoodLove",
+        "Good food = good mood 🍲 #HappinessServed",
+        "Plating is half the taste 😍 #FoodPhotography",
+        "A little butter never hurt anyone 🧈 #ComfortFood",
+        "Taste buds deserve a vacation 🌴 Try world flavors at home.",
+        "Coffee before talkie ☕ #MorningFuel",
+        "Street food > fancy food, sometimes. #FoodieLife",
+        "Cooking is therapy, dishes are the price. #ChefAtHome",
+        "Every bite is a memory 🍕 #FoodLove",
+        "Dessert is not optional 🍰 #SweetTooth",
+        "Season it with love ❤️ #HomeCooking"
+      ],
+      "Pets": [
+        "Your dog’s tail is today’s happiness meter 🐾 Show me that wag! #DogLife #PetLovers",
+        "Cat naps: the ultimate productivity hack 💤 #CatLife #CozyVibes",
+        "They don’t need perfect—just your time. Take a walk together. #PetCare #DailyJoy",
+        "Wet noses, warm hearts ❤️ #DogMom #DogDad",
+        "A meow is worth a thousand words. #CatPerson",
+        "Adopt, don’t shop 🐶🐱 #RescueLove",
+        "Every fetch is quality time 🎾 #PuppyLove",
+        "Zoomies are proof of happiness 😂 #PetJoy",
+        "Life’s better with paw prints on your floor.",
+        "Food disappears, tails wag = true love.",
+        "Cuddles > therapy sessions 🐾 #Healing",
+        "Pets teach unconditional love. #LifeLessons",
+        "Show me your pet’s goofy side! #PetVibes"
+      ],
+      "Local Business": [
+        "Your regulars are your superpower ❤️ Say hi, remember names, build community. #ShopLocal #SmallBiz",
+        "Behind the scenes matters. Show your process—customers love it. #SupportLocal #MadeHere",
+        "One post a day keeps invisibility away. Consistency wins. #MarketingTips #LocalBiz",
+        "People buy stories, not just products. Tell yours. #BrandStory",
+        "Celebrate your milestones with your customers 🎉 #BizLove",
+        "Highlight your team—they are your heroes. #SmallBizStrong",
+        "A smile is your best marketing tool 😄 #CustomerLove",
+        "Local first. Global second. 🌎 #CommunityPride",
+        "Reply fast, build trust 📨 #CustomerCare",
+        "Consistency in branding builds recognition 🖌️ #Marketing101",
+        "Run a poll, ask a question—engagement grows trust. #SmallBizTips",
+        "Your vibe attracts your tribe ✨ #LocalSupport",
+        "One loyal customer is worth a thousand ads. #Retention"
+      ]
+    };
+
+    const demoNiche = document.getElementById('demoNiche');
+    const lines = [document.getElementById('line1'), document.getElementById('line2'), document.getElementById('line3')];
+    const statusEl = document.getElementById('demoStatus');
+    const prevBtn = document.getElementById('prevDemo');
+    const nextBtn = document.getElementById('nextDemo');
+
+    let niche = demoNiche.value;
+    let index = 0;           // which caption set (0..n-1)
+    let typingTimers = [];   // active timers (for cleanup)
+    let autoTimer = null;    // auto-rotation timer
+
+    function clearTyping(){
+      typingTimers.forEach(t => clearInterval(t));
+      typingTimers = [];
+    }
+    function setLinesEmpty(){
+      lines.forEach(el => el.textContent = "");
+    }
+    function typeLine(el, text, speed=18, done){
+      el.textContent = "";
+      let i = 0;
+      const timer = setInterval(() => {
+        el.textContent = text.slice(0, i++);
+        if(i > text.length){
+          clearInterval(timer);
+          if (done) done();
+        }
+      }, speed);
+      typingTimers.push(timer);
+    }
+
+    function renderStatus(){
+      const total = demoData[niche].length >= 3 ? Math.ceil(demoData[niche].length / 3) : 1;
+      const page = Math.floor(index / 3) + 1;
+      statusEl && (statusEl.textContent = `${page} / ${total}`);
+    }
+
+    function startTypingCycle(){
+      clearTyping();
+      setLinesEmpty();
+      const all = demoData[niche];
+      const slice = all.slice(index, index + 3);
+      while (slice.length < 3) slice.push("");
+
+      typeLine(lines[0], slice[0], 16, () => {
+        typeLine(lines[1], slice[1], 16, () => {
+          typeLine(lines[2], slice[2], 16, () => {
+            autoTimer = setTimeout(() => {
+              nextSet();
+            }, 2600);
+          });
+        });
+      });
+      renderStatus();
+    }
+
+    function nextSet(){
+      const len = demoData[niche].length;
+      index = (index + 3) % (Math.ceil(len / 3) * 3);
+      startTypingCycle();
+    }
+    function prevSet(){
+      const len = demoData[niche].length;
+      const pages = Math.ceil(len / 3);
+      index = (index - 3 + pages * 3) % (pages * 3);
+      startTypingCycle();
+    }
+
+    function resetDemo(newNiche){
+      niche = newNiche;
+      index = 0;
+      clearTyping();
+      if (autoTimer) clearTimeout(autoTimer);
+      startTypingCycle();
+    }
+
+    demoNiche.addEventListener('change', (e) => resetDemo(e.target.value));
+    nextBtn.addEventListener('click', () => { if (autoTimer) clearTimeout(autoTimer); nextSet(); });
+    prevBtn.addEventListener('click', () => { if (autoTimer) clearTimeout(autoTimer); prevSet(); });
+
+    // Kick off
+    resetDemo(niche);
+  </script>
+</body>
+</html>
