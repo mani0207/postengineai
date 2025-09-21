@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Go Pro — postEngineAI (Coming Soon)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--ig:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+    .ig{background-image:var(--ig)}
+    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  </style>
+</head>
+<body class="bg-slate-950 text-white">
+  <header class="sticky top-0 z-40 border-b border-white/10 glass">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
+        <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
+      </a>
+      <nav class="text-sm"><a href="/" class="opacity-90 hover:opacity-100">Home</a></nav>
+    </div>
+  </header>
+  <section class="ig">
+    <div class="max-w-5xl mx-auto px-4 py-12">
+      <div class="glass rounded-2xl border border-white/10 p-8">
+        <h1 class="text-3xl font-bold">Go Pro — Payments coming soon</h1>
+        <p class="mt-3 text-white/90">Pro unlocks <b>500 captions/month</b> for just <b>$5/month</b>. Payments will be live soon.</p>
+        <div class="mt-6 flex gap-3">
+          <a href="#notify" class="rounded-xl bg-white text-black px-5 py-3 font-medium">Get notified</a>
+          <a href="/" class="rounded-xl border border-white/20 px-5 py-3 font-medium hover:bg-white/10">Back to site</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="notify" class="py-14">
+    <div class="max-w-md mx-auto px-4">
+      <div class="glass rounded-2xl border border-white/10 p-6">
+        <h2 class="text-xl font-semibold">Be first to know when payments go live</h2>
+        <form id="notifyForm" class="mt-4 grid gap-3">
+          <input name="email" type="email" required class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="you@example.com">
+          <button class="rounded-xl bg-white text-black px-4 py-2 font-medium">Notify me</button>
+          <p id="nOk" class="hidden text-green-400 text-sm">We'll email you when ready.</p>
+          <p id="nErr" class="hidden text-red-400 text-sm">Something went wrong.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+  <footer class="border-t border-white/10 py-10 text-center text-white/70">© <span id="year"></span> postEngineAI</footer>
+  <script>
+    document.getElementById('year').textContent=new Date().getFullYear();
+    document.getElementById('notifyForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const email=e.target.email.value;
+      try{
+        await fetch('/api/early-access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,niche:'Pro Notify',source:'Pro Page'})});
+        document.getElementById('nOk').classList.remove('hidden');
+      }catch{
+        document.getElementById('nErr').classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

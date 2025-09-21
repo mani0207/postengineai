@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>postEngineAI — Real Demo</title>
+  <title>postEngineAI — Real Demo (Patched)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
@@ -90,35 +90,48 @@
       preview.appendChild(el);
     });
 
-    async function fileToDataUrl(file){
-      return new Promise((resolve,reject)=>{
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
+    async function resizeImageToDataURL(file, max = 1024) {
+      const imgEl = new Image();
+      imgEl.src = URL.createObjectURL(file);
+      await imgEl.decode();
+      const scale = Math.min(1, max / Math.max(imgEl.width, imgEl.height));
+      const w = Math.round(imgEl.width * scale);
+      const h = Math.round(imgEl.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0, w, h);
+      return canvas.toDataURL('image/jpeg', 0.8);
     }
 
     go.addEventListener('click', async ()=>{
       out.innerHTML=''; hint.textContent='Generating…';
       let imageDataUrl = '';
       const file = img.files?.[0];
-      if (file) imageDataUrl = await fileToDataUrl(file);
+      if (file) imageDataUrl = await resizeImageToDataURL(file, 1024);
+
       try{
         const res = await fetch('/api/generate', {
           method:'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: topic.value, imageDataUrl })
         });
+
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const text = await res.text();
+          throw new Error('Non-JSON response: ' + text.slice(0, 160));
+        }
+
+        const j = await res.json();
         if (res.status === 402) {
-          const j = await res.json();
           hint.textContent = 'Free credits used up. Please upgrade.';
           setCredits(j.remaining ?? getCredits());
           return;
         }
-        const j = await res.json();
-        if (!res.ok) throw new Error(j.error || 'Server error');
+        if (!res.ok) throw new Error(j.error + (j.detail ? (' — ' + j.detail) : ''));
         setCredits(j.remaining ?? getCredits()); // server may control
+
         (j.captions||[]).forEach(text=>{
           const card=document.createElement('div'); card.className='cap-card';
           const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
