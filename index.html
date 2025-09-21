@@ -1,253 +1,217 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>postEngineAI – AI captions & story ideas for your niche</title>
-  <link rel="icon" href="/favicon.ico" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>postEngineAI Demo — 20 Free Captions</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
   <style>
-    :root{
-      --bg:#ffffff;--text:#111827;--muted:#475569;--card:#ffffff;--border:#e5e7eb;
-      --cta:#1877F2;--cta-contrast:#ffffff;--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF);
-      --badge:#FF0000;--glass-bg:rgba(255,255,255,0.12);--soft-border:rgba(0,0,0,0.08)
-    }
-    .theme-dark{
-      --bg:#0F0F0F;--text:#E5E7EB;--muted:#A8B3CF;--card:#111418;--border:#1f2937;
-      --cta:#3EA6FF;--cta-contrast:#081018;--glass-bg:rgba(17,20,24,0.7);--soft-border:rgba(255,255,255,0.18)
-    }
-    html,body{background:var(--bg);color:var(--text)}
-    .muted{color:var(--muted)} .card{background:var(--card);border-color:var(--border)}
-    .btn-primary{background:var(--cta);color:var(--cta-contrast)} .btn-primary:hover{filter:brightness(0.95)}
-    .border-theme{border-color:var(--border)} .ig-gradient{background-image:var(--ig-grad)}
-    .badge-new{background:var(--badge);color:#fff} .themed-input{background:var(--card);color:var(--text);border-color:var(--border)}
-    .themed-input::placeholder{color:#9CA3AF}
-    html,body,header,footer,.card,.border-theme,.btn-primary,input,select,textarea,button{transition:background-color .25s,color .25s,border-color .25s,box-shadow .25s}
+    :root{--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+    .ig-gradient{background-image:var(--ig-grad)}
     .chip{background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.4rem .7rem;border-radius:.8rem;font-size:.9rem}
-    .cap-card{background:#0e141b;border:1px solid #1b2430;border-radius:1rem;padding:1rem}
+    .cap-card{background:#0e141b;border:1px solid #1b2430;border-radius:1rem;padding:1rem;color:#e5e7eb}
     .cap-actions button{background:#101826;border:1px solid #1b2430;color:#dbe4ff;padding:.45rem .7rem;border-radius:.7rem;font-size:.85rem}
+    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   </style>
 </head>
-<body class="antialiased">
+<body class="bg-slate-950 text-white">
 
-  <!-- Header with logo + mobile menu + theme toggle -->
-  <header class="sticky top-0 z-40 border-b border-theme"
-    style="background:rgba(0,0,0,0.06);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-14 sm:h-16">
-        <!-- Logo (retained) -->
-        <a href="/" class="flex items-center gap-2">
-          <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 sm:h-10 w-auto object-contain align-middle" loading="eager" decoding="sync" />
-          <span class="inline font-semibold text-sm sm:text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">
-            postEngineAI
-          </span>
-        </a>
-        <div class="flex items-center gap-2 sm:gap-3">
-          <nav class="hidden sm:flex items-center gap-4 text-sm">
-            <a href="#features" class="hover:opacity-80">Features</a>
-            <a href="#pricing" class="hover:opacity-80">Pricing</a>
-            <a href="#signup" class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</a>
-          </nav>
-          <button id="themeToggle" class="w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80" aria-label="Toggle theme">
-            <span id="themeIcon">🌙</span>
-          </button>
-          <button id="menuBtn" class="sm:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-theme hover:opacity-80" aria-controls="mobileMenu" aria-expanded="false" aria-label="Open menu">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div id="mobileMenu" class="sm:hidden hidden border-t border-theme bg-[var(--card)]">
-      <div class="max-w-6xl mx-auto px-4 py-3 text-sm">
-        <a href="#features" class="block py-2 hover:opacity-80">Features</a>
-        <a href="#pricing" class="block py-2 hover:opacity-80">Pricing</a>
-        <a href="#signup" class="block py-2">
-          <span class="inline-flex items-center rounded-xl px-4 py-2 btn-primary">Join Early Access</span>
-        </a>
-      </div>
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b border-white/10 glass">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
+        <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
+      </a>
+      <a href="#signup" id="openTrial" class="text-sm underline">Start free trial</a>
     </div>
   </header>
 
-  <!-- Hero with prompt-based Preview -->
-  <section class="ig-gradient text-white">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div>
-          <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">Stop stressing about captions. <span class="text-yellow-200">Let AI do the writing</span>.</h1>
-          <p class="mt-5 text-lg">Daily captions, story ideas, and hashtag suggestions — personalized for your niche. Save <strong>5+ hours/week</strong>.</p>
-          <div class="mt-8 flex gap-3">
-            <a href="#signup" class="btn-primary rounded-xl px-5 py-3">Join Early Access – $9/mo</a>
-            <a href="#features" class="underline text-white">See how it works</a>
-          </div>
+  <!-- Hero -->
+  <section class="ig-gradient">
+    <div class="max-w-5xl mx-auto px-4 py-16 sm:py-20">
+      <h1 class="text-4xl sm:text-5xl font-bold leading-tight">Try postEngineAI — <span class="text-yellow-200">20 free captions</span></h1>
+      <p class="mt-3 text-lg/7 max-w-2xl">Describe your niche or post idea. Get multiple captions instantly. When your free credits are out, upgrade for <b>$6/month</b>.</p>
+
+      <!-- Trial status -->
+      <div id="trialBar" class="mt-6 text-sm bg-black/30 border border-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-2">
+        <span>Free captions left:</span>
+        <span id="credits" class="font-semibold">—</span>
+      </div>
+
+      <!-- Preview card -->
+      <div class="mt-8 p-6 rounded-2xl border border-white/10 glass">
+        <label for="topicInput" class="block text-sm opacity-90">Describe your niche or post idea</label>
+        <input id="topicInput" type="text" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40" placeholder="e.g., pet grooming tips, morning workout motivation, local café launch">
+        <div class="flex flex-wrap gap-2 mt-3">
+          <button class="chip">Pet grooming tips</button>
+          <button class="chip">Morning workout motivation</button>
+          <button class="chip">Homemade pizza reel</button>
+          <button class="chip">Salon promo for summer</button>
+          <button class="chip">Real estate open house</button>
         </div>
-        <div>
-          <div class="card p-6 rounded-2xl border border-theme shadow-sm" style="background:var(--glass-bg);">
-            <div class="text-sm font-semibold">Preview</div>
-            <label for="topicInput" class="block mt-4 mb-2 text-sm opacity-80">
-              Describe your niche or post idea
-              <span class="opacity-60">(e.g., “pet grooming tips”, “morning workout motivation”, “local café launch”)</span>
-            </label>
-            <input id="topicInput" type="text" class="w-full themed-input rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#5b8cff]" placeholder="Type a few words…">
-            <div class="flex flex-wrap gap-2 mt-3">
-              <button class="chip">Pet grooming tips</button>
-              <button class="chip">Morning workout motivation</button>
-              <button class="chip">Homemade pizza reel</button>
-              <button class="chip">Salon promo for summer</button>
-              <button class="chip">Real estate open house</button>
-            </div>
-            <div class="mt-6 flex items-center gap-3">
-              <button id="genBtn" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate captions</button>
-              <span id="genHint" class="text-sm opacity-70">Press Enter to generate</span>
-            </div>
-            <div id="results" class="mt-6 grid gap-4"></div>
-          </div>
+        <div class="mt-5 flex items-center gap-3">
+          <button id="genBtn" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate captions</button>
+          <span class="text-sm opacity-80">Each generation uses <b>4</b> credits</span>
         </div>
+        <div id="results" class="mt-6 grid gap-4"></div>
       </div>
     </div>
   </section>
 
-  <!-- Features -->
-  <section id="features" class="py-16">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="text-center max-w-2xl mx-auto">
-        <h2 class="text-3xl font-bold">How postEngineAI helps you post faster</h2>
-        <p class="mt-2 muted">Lightweight workflow, results that feel on-brand.</p>
-      </div>
-      <div class="mt-10 grid md:grid-cols-3 gap-6">
-        <div class="card p-6 rounded-2xl border border-theme"><div class="text-lg font-semibold">Niche-tailored captions</div><p class="mt-2 muted">Type your niche or post idea (“pet grooming tips”, “café launch”) and get tone-matched captions instantly.</p></div>
-        <div class="card p-6 rounded-2xl border border-theme"><div class="text-lg font-semibold">Hashtags that fit</div><p class="mt-2 muted">Suggested hashtags to boost reach without spam. Copy with one click.</p></div>
-        <div class="card p-6 rounded-2xl border border-theme"><div class="text-lg font-semibold">Simple, fast workflow</div><p class="mt-2 muted">Generate, copy or share to WhatsApp in one tap. Save 5+ hours/week.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pricing (retained) -->
-  <section id="pricing" class="py-16">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="text-center max-w-2xl mx-auto">
-        <h2 class="text-3xl font-bold">Simple pricing. No surprises.</h2>
-        <p class="mt-2 muted">One plan for early access. Upgrade paths coming soon.</p>
-      </div>
-      <div class="mt-8 grid md:grid-cols-3 gap-6">
-        <div class="card md:col-start-2 p-6 rounded-2xl border border-theme text-center">
-          <div class="flex justify-center items-center gap-2">
-            <span class="font-semibold">Starter</span>
-            <span class="badge-new text-xs px-2 py-0.5 rounded-full">New!</span>
-          </div>
-          <div class="mt-2 text-4xl font-bold">$9<span class="text-xl muted">/mo</span></div>
-          <ul class="mt-4 muted space-y-1">
-            <li>30–50 AI captions & ideas / month</li>
-            <li>Niche-specific hashtags</li>
-            <li>Save & copy with one click</li>
-            <li>Cancel anytime</li>
-          </ul>
-          <a href="#signup" class="btn-primary inline-block mt-6 px-4 py-3 rounded-xl w-full">Join Early Access</a>
-        </div>
+  <!-- Paywall Modal -->
+  <div id="payModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 p-4">
+    <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6">
+      <h3 class="text-xl font-semibold">You’ve used your 20 free captions</h3>
+      <p class="mt-2 text-slate-300">Unlock unlimited captions, hashtag suggestions, and updates.</p>
+      <ul class="mt-3 text-sm text-slate-300 list-disc ml-5">
+        <li>$6/month · cancel anytime</li>
+        <li>7‑day money‑back guarantee</li>
+      </ul>
+      <div class="mt-5 flex flex-col sm:flex-row gap-2">
+        <a id="goPricing" href="/#pricing" class="flex-1 text-center rounded-xl bg-white text-black px-4 py-2 font-medium">Continue ($6/mo)</a>
+        <button id="closePay" class="flex-1 rounded-xl border border-white/20 px-4 py-2">Maybe later</button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- Signup (retained) -->
-  <section id="signup" class="py-16">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
-      <div class="grid lg:grid-cols-2 gap-10 items-start">
-        <div>
-          <h3 class="text-2xl font-bold">Join early access</h3>
-          <p class="mt-2 muted">Be among the first to try postEngineAI and lock in <strong>$9/month</strong> for life. We’ll email you when your invite is ready.</p>
-        </div>
-        <div>
-          <form id="ea-form" action="/api/early-access" method="POST" class="card p-6 rounded-2xl border border-theme shadow-sm">
-            <label class="block text-sm font-medium">Name</label>
-            <!-- Honeypot field -->
-            <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" style="display:none !important;" />
-            <input name="name" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="Jane Doe" />
-            <label class="block text-sm font-medium mt-4">Email</label>
-            <input name="email" type="email" required class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="you@example.com" />
-            <label class="block text-sm font-medium mt-4">Niche</label>
-            <select name="niche" class="themed-input mt-1 w-full rounded-xl border px-3 py-2">
-              <option>Pets</option><option>Fitness</option><option>Food</option><option>Local Business</option><option>Other</option>
-            </select>
-            <label class="block text-sm font-medium mt-4">Instagram/TikTok Handle (optional)</label>
-            <input name="handle" type="text" class="themed-input mt-1 w-full rounded-xl border px-3 py-2" placeholder="@yourhandle" />
-            <input type="hidden" name="source" value="Landing Page" />
-            <button class="mt-6 w-full btn-primary rounded-xl px-4 py-3">Request Invite</button>
-            <p id="ea-success" class="hidden mt-3 text-sm" style="color:#22c55e;">Thanks! You’re on the list.</p>
-            <p id="ea-error" class="hidden mt-3 text-sm" style="color:#ef4444;">Oops, something went wrong.</p>
-          </form>
-        </div>
-      </div>
+  <!-- Registration Modal -->
+  <div id="regModal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 p-4">
+    <div class="w-full max-w-md rounded-2xl bg-slate-900 border border-white/10 p-6">
+      <h3 class="text-xl font-semibold">Start your free trial</h3>
+      <p class="mt-1 text-sm text-slate-300">Enter your email to receive your invite and 20 free captions.</p>
+      <form id="regForm" class="mt-4 grid gap-3">
+        <input name="website" class="hidden" autocomplete="off" tabindex="-1" aria-hidden="true">
+        <input name="name"  class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="Name (optional)">
+        <input name="email" type="email" required class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="you@example.com">
+        <select name="niche" class="rounded-xl bg-black/30 border border-white/10 px-4 py-2">
+          <option>Pets</option><option>Fitness</option><option>Food</option><option>Local Business</option><option>Other</option>
+        </select>
+        <input name="handle" class="rounded-xl bg-black/30 border border-white/10 px-4 py-2" placeholder="@yourhandle (optional)">
+        <button class="rounded-xl bg-white text-black px-4 py-2 font-medium">Start trial</button>
+        <p id="regOk" class="hidden text-green-400 text-sm">You're in! Credits added.</p>
+        <p id="regErr" class="hidden text-red-400 text-sm">Something went wrong.</p>
+      </form>
     </div>
-  </section>
+  </div>
 
-  <!-- Final CTA -->
-  <section class="ig-gradient text-white py-12 text-center">
-    <h3 class="text-2xl sm:text-3xl font-bold">Ready to post faster with AI?</h3>
-    <div class="mt-6">
-      <a href="#signup" class="inline-flex items-center gap-2 rounded-xl bg-white text-[#1877F2] px-5 py-3 font-medium hover:bg-white/90">
-        Join Early Access
-        <span class="badge-new text-xs px-2 py-0.5 rounded-full">New!</span>
-      </a>
-    </div>
-  </section>
-
-  <footer class="border-t border-theme py-10 text-center muted">
-    © <span id="year"></span> postEngineAI. All rights reserved.
-  </footer>
-
-  <!-- Scripts: theme/menu/year + prompt demo + signup fetch -->
   <script>
-    // Year
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // ---- trial state (local) ----
+    const CREDITS_KEY = 'pe_trial_credits';
+    const ANON_KEY = 'pe_anon';
+    function setCookie(k,v,days){ const d=new Date(); d.setTime(d.getTime()+days*864e5); document.cookie = k+'='+encodeURIComponent(v)+'; expires='+d.toUTCString()+'; path=/; SameSite=Lax'; }
+    function getCookie(k){ return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;},{})[k]; }
+    if(!getCookie(ANON_KEY)){ setCookie(ANON_KEY, (self.crypto?.randomUUID?.()||String(Math.random()).slice(2)), 365); }
+    if(localStorage.getItem(CREDITS_KEY)===null){ localStorage.setItem(CREDITS_KEY,'0'); } // gated until registration
 
-    // Theme toggle
-    const root=document.documentElement, body=document.body, toggleBtn=document.getElementById('themeToggle'), icon=document.getElementById('themeIcon');
-    function applyTheme(mode){const isDark=(mode==='dark');root.classList.toggle('theme-dark',isDark);body.classList.toggle('theme-dark',isDark);icon.textContent=isDark?'🌙':'🌞';}
-    const savedTheme=localStorage.getItem('pe_theme')||'dark';applyTheme(savedTheme);
-    toggleBtn.addEventListener('click',()=>{const newMode=root.classList.contains('theme-dark')?'light':'dark';localStorage.setItem('pe_theme',newMode);applyTheme(newMode);});
+    const creditsEl = document.getElementById('credits');
+    const payModal = document.getElementById('payModal');
+    const closePay = document.getElementById('closePay');
+    const regModal = document.getElementById('regModal');
+    const openTrial = document.getElementById('openTrial');
+    const regForm = document.getElementById('regForm');
 
-    // Mobile menu
-    const menuBtn=document.getElementById('menuBtn'), mobileMenu=document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click',()=>{const open=mobileMenu.classList.toggle('hidden')===false;menuBtn.setAttribute('aria-expanded',String(open));});
-    mobileMenu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{mobileMenu.classList.add('hidden');menuBtn.setAttribute('aria-expanded','false');}));
-    document.addEventListener('keydown',(e)=>{if(e.key==='Escape'){mobileMenu.classList.add('hidden');menuBtn.setAttribute('aria-expanded','false');}});
+    function getCredits(){ return parseInt(localStorage.getItem(CREDITS_KEY)||'0',10); }
+    function setCredits(n){ localStorage.setItem(CREDITS_KEY,String(Math.max(0,n))); renderCredits(); }
+    function renderCredits(){ creditsEl.textContent = getCredits(); }
 
-    // Prompt-based demo (client-side mock)
-    (function(){
-      const topicEl=document.getElementById('topicInput'), genBtn=document.getElementById('genBtn'), chips=document.querySelectorAll('.chip'), resultsEl=document.getElementById('results');
-      const openers=["No excuses, just results","Small steps, big wins","Consistency beats motivation","Make it fun, make it daily","From idea to post in seconds"];
-      const closers=["Let’s go! 🚀","You got this. ✨","One step at a time. 💪","Tag a friend to try this. 🤝","Save this for later! 📌"];
-      const tagSets=[["#content","#creator","#social"],["#daily","#inspo","#goals"],["#reels","#caption","#trending"],["#marketing","#growth","#ideas"],["#tips","#howto","#today"]];
-      function titleCase(s){return s.replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase());}
-      function makeCaptions(topic){const base=topic.replace(/\s+/g,' ').trim();if(!base)return[];const t=titleCase(base);const caps=[];for(let i=0;i<6;i++){const opener=openers[(i+base.length)%openers.length];const closer=closers[(i*2+base.length)%closers.length];const tags=tagSets[(i+base.length)%tagSets.length].join(' ');const emoji=["✨","🔥","💡","💪","🐾","🍕","🎯","📸"][(i+base.length)%8];let text;if(i%3===0){text=`${opener} — ${t} ${emoji}\n${tags}`}else if(i%3===1){text=`${t}: ${closer} ${emoji}\n${tags}`}else{text=`${emoji} ${t}\n${opener}. ${closer}\n${tags}`}caps.push(text);}return caps;}
-      function render(captions){resultsEl.innerHTML='';if(!captions.length){resultsEl.innerHTML='<p class="opacity-70">Type a few words above and click Generate.</p>';return;}
-        captions.forEach(c=>{const card=document.createElement('div');card.className='cap-card';const p=document.createElement('pre');p.style.whiteSpace='pre-wrap';p.style.font='inherit';p.style.margin='0 0 .75rem 0';p.textContent=c;
-          const actions=document.createElement('div');actions.className='cap-actions flex gap-2';
-          const copyBtn=document.createElement('button');copyBtn.textContent='📋 Copy';copyBtn.onclick=async()=>{try{await navigator.clipboard.writeText(c);copyBtn.textContent='✅ Copied';setTimeout(()=>copyBtn.textContent='📋 Copy',1200);}catch{alert('Copy failed');}};
-          const waBtn=document.createElement('button');waBtn.textContent='📤 Share';waBtn.onclick=()=>{const url='https://wa.me/?text='+encodeURIComponent(c);window.open(url,'_blank','noopener');};
-          actions.appendChild(copyBtn);actions.appendChild(waBtn);card.appendChild(p);card.appendChild(actions);resultsEl.appendChild(card);});}
-      function generateNow(){render(makeCaptions(topicEl.value));}
-      genBtn.addEventListener('click',generateNow);
-      topicEl.addEventListener('keydown',(e)=>{if(e.key==='Enter'){e.preventDefault();generateNow();}});
-      chips.forEach(chip=>chip.addEventListener('click',()=>{topicEl.value=chip.textContent;generateNow();topicEl.focus();}));
-      render([]);
-    })();
+    function show(el){ el.classList.remove('hidden'); el.classList.add('flex'); }
+    function hide(el){ el.classList.add('hidden'); el.classList.remove('flex'); }
 
-    // Signup form -> JSON POST to /api/early-access (retained)
-    (function(){
-      const form=document.getElementById('ea-form');
-      form.addEventListener('submit',async(e)=>{
-        e.preventDefault();
-        const btn=form.querySelector('button');btn.disabled=true;btn.textContent='Submitting…';
-        const data={name:form.name.value,email:form.email.value,niche:form.niche.value,handle:form.handle.value,source:form.source.value||'Landing Page',website:form.website?form.website.value:""};
-        try{
-          const res=await fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-          if(res.ok){document.getElementById('ea-success').classList.remove('hidden');form.reset();}
-          else{document.getElementById('ea-error').classList.remove('hidden');}
-        }catch{document.getElementById('ea-error').classList.remove('hidden');}
-        finally{btn.disabled=false;btn.textContent='Request Invite';}
+    // ---- registration flow ----
+    openTrial.addEventListener('click', (e)=>{ e.preventDefault(); show(regModal); });
+    regForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const btn = regForm.querySelector('button'); btn.disabled = true; btn.textContent='Starting…';
+      const data = {
+        name: regForm.name.value,
+        email: regForm.email.value,
+        niche: regForm.niche.value,
+        handle: regForm.handle.value,
+        source: 'Demo Trial',
+        website: regForm.website.value || ""
+      };
+      try{
+        const r = await fetch('/api/early-access', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
+        });
+        if(r.ok){
+          // grant 20 credits
+          setCredits(20);
+          document.getElementById('regOk').classList.remove('hidden');
+          setTimeout(()=>{ hide(regModal); }, 800);
+        }else{
+          document.getElementById('regErr').classList.remove('hidden');
+        }
+      }catch{
+        document.getElementById('regErr').classList.remove('hidden');
+      }finally{
+        btn.disabled=false; btn.textContent='Start trial';
+      }
+    });
+
+    // ---- caption generator (client-side mock) ----
+    const topicEl=document.getElementById('topicInput');
+    const genBtn=document.getElementById('genBtn');
+    const chips=document.querySelectorAll('.chip');
+    const resultsEl=document.getElementById('results');
+
+    const openers=["No excuses, just results","Small steps, big wins","Consistency beats motivation","Make it fun, make it daily","From idea to post in seconds"];
+    const closers=["Let’s go! 🚀","You got this. ✨","One step at a time. 💪","Tag a friend to try this. 🤝","Save this for later! 📌"];
+    const tagSets=[["#creator","#social","#reels"],["#daily","#inspo","#goals"],["#caption","#trending","#growth"],["#marketing","#content","#ideas"],["#tips","#howto","#today"]];
+
+    function titleCase(s){return s.replace(/\s+/g,' ').trim().replace(/\b\w/g,m=>m.toUpperCase());}
+    function makeCaptions(topic){
+      const base=topic.replace(/\s+/g,' ').trim(); if(!base) return [];
+      const t=titleCase(base), out=[];
+      for(let i=0;i<4;i++){
+        const o=openers[(i+base.length)%openers.length];
+        const c=closers[(i*2+base.length)%closers.length];
+        const tags=tagSets[(i+base.length)%tagSets.length].join(' ');
+        const em=["✨","🔥","💡","💪","🐾","🍕","🎯","📸"][(i+base.length)%8];
+        out.push(`${em} ${t}\n${o}. ${c}\n${tags}`);
+      }
+      return out;
+    }
+
+    function render(captions){
+      resultsEl.innerHTML='';
+      if(!captions.length){ resultsEl.innerHTML='<p class="opacity-80">Type a few words above and click Generate.</p>'; return; }
+      captions.forEach(c=>{
+        const card=document.createElement('div'); card.className='cap-card';
+        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=c;
+        const actions=document.createElement('div'); actions.className='cap-actions flex gap-2';
+        const copyBtn=document.createElement('button'); copyBtn.textContent='📋 Copy';
+        copyBtn.onclick=async()=>{ try{await navigator.clipboard.writeText(c);copyBtn.textContent='✅ Copied';setTimeout(()=>copyBtn.textContent='📋 Copy',1200);}catch{alert('Copy failed');} };
+        const waBtn=document.createElement('button'); waBtn.textContent='📤 Share';
+        waBtn.onclick=()=>{ const url='https://wa.me/?text='+encodeURIComponent(c); window.open(url,'_blank','noopener'); };
+        actions.appendChild(copyBtn); actions.appendChild(waBtn);
+        card.appendChild(pre); card.appendChild(actions);
+        resultsEl.appendChild(card);
       });
-    })();
+    }
+
+    function generateNow(){
+      const credits = getCredits();
+      if (credits <= 0) { show(payModal); return; }
+      const topic = topicEl.value.trim();
+      if (!topic) { topicEl.focus(); return; }
+      // each generation uses 4 credits
+      const cost = 4;
+      if (credits < cost) { show(payModal); return; }
+      const caps = makeCaptions(topic);
+      setCredits(credits - cost);
+      render(caps);
+    }
+
+    genBtn.addEventListener('click', generateNow);
+    topicEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); generateNow(); }});
+    chips.forEach(ch=>ch.addEventListener('click', ()=>{ topicEl.value = ch.textContent; generateNow(); }));
+    closePay.addEventListener('click', ()=> hide(payModal));
+    document.getElementById('goPricing').addEventListener('click', ()=> hide(payModal));
+
+    // initialize UI
+    render([]); renderCredits();
   </script>
 </body>
 </html>
