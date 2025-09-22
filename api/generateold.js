@@ -97,24 +97,13 @@ export default async function handler(req, res) {
     // identify anon
     const cookies = parseCookies(req);
     const anon = cookies['pe_anon'] || null;
-    const isAuth = (cookies['pe_auth'] === '1');
     if (!anon) return res.status(400).json({ error: 'Missing anon cookie' });
-
-    if (!isAuth) {
-      const ip = await readIp(req);
-      const ipOk = await ensureIpAllowance(supa, ip);
-      if (!ipOk.ok) {
-        return res.status(402).json({ error: 'signin_required', message: 'Sign in to continue', remaining: 0 });
-      }
-    }
 
     const { user, remaining } = await ensureUserAndCredits(supa, anon);
 
     // paywall check (each call consumes 4 credits)
     const COST = 4;
-    if (!isAuth && remaining < COST) {
-      // For guests we don't consume Supabase credits; they are IP-gated.
-    } else if (!user.is_pro && remaining < COST) {
+    if (!user.is_pro && remaining < COST) {
       return res.status(402).json({
         error: 'credits_exhausted',
         message: 'Free credits are used up. Upgrade to continue.',
@@ -173,40 +162,4 @@ export default async function handler(req, res) {
     console.error('generate error:', e);
     return res.status(500).json({ error: 'Server error', detail: String(e?.message || e) });
   }
-}
-
-async function readIp(req){
-  const xff = (req.headers['x-forwarded-for'] || '').toString();
-  const ip = xff.split(',')[0].trim() || req.socket?.remoteAddress || null;
-  return ip;
-}
-
-async function ensureIpAllowance({ url, key }, ip){
-  if (!ip) return { ok: true, remain: 2 };
-  // read row
-  let r = await fetch(`${url}/rest/v1/ip_usage?ip=eq.${encodeURIComponent(ip)}`, {
-    headers: { Authorization:`Bearer ${key}`, apikey:key }
-  });
-  const rows = await r.json();
-  let row = rows[0];
-  const limit = 2;
-  if (!row) {
-    // first time
-    r = await fetch(`${url}/rest/v1/ip_usage`, {
-      method:'POST',
-      headers:{ Authorization:`Bearer ${key}`, apikey:key, 'Content-Type':'application/json', Prefer:'return=representation' },
-      body: JSON.stringify([{ ip, used: 0, last_at: new Date().toISOString() }])
-    });
-    row = (await r.json())[0];
-  }
-  if (row.used >= limit) {
-    return { ok: false, used: row.used, limit };
-  }
-  // increment
-  await fetch(`${url}/rest/v1/ip_usage?ip=eq.${encodeURIComponent(ip)}`, {
-    method:'PATCH',
-    headers:{ Authorization:`Bearer ${key}`, apikey:key, 'Content-Type':'application/json' },
-    body: JSON.stringify({ used: row.used + 1, last_at: new Date().toISOString() })
-  });
-  return { ok: true, used: row.used + 1, limit, remain: Math.max(0, limit - (row.used + 1)) };
 }
