@@ -8,17 +8,11 @@
   <style>
     :root{--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
     .ig-gradient{background-image:var(--ig-grad)}
-    .chip{display:inline-block; background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.35rem .7rem;border-radius:.8rem;font-size:.9rem}
+    .chip{background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.35rem .7rem;border-radius:.8rem;font-size:.9rem}
     .cap-card{background:#0e141b;border:1px solid #1b2430;border-radius:1rem;padding:1rem;color:#e5e7eb}
     .cap-actions button{background:#101826;border:1px solid #1b2430;color:#dbe4ff;padding:.45rem .7rem;border-radius:.7rem;font-size:.85rem}
     .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   </style>
-
-  <!-- Supabase for email/password + Google sign-in -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <meta name="supabase-url" content="__SUPABASE_URL__">
-  <meta name="supabase-anon" content="__SUPABASE_ANON_KEY__">
-
 </head>
 <body class="bg-slate-950 text-white">
   <header class="sticky top-0 z-40 border-b border-white/10 glass">
@@ -32,24 +26,24 @@
   </header>
 
   <section class="ig-gradient">
-    <div class="max-w-5xl mx-auto px-4 py-10 sm:py-14">
-      <h1 class="text-2xl sm:text-4xl font-bold">Your Social Caption Engine — Instant, Catchy, Smart</h1>
-      <p class="mt-2 text-slate-100">Guest users: 2 free generations. Sign in to unlock 20-caption trial. Each generation uses 4 credits.</p>
+    <div class="max-w-5xl mx-auto px-4 py-14">
+      <h1 class="text-3xl sm:text-4xl font-bold">Real demo — powered by ChatGPT</h1>
+      <p class="mt-2 text-slate-100">Guest users: 2 captions free. Sign in to unlock 20-caption trial.</p>
 
       <div class="mt-5 text-sm bg-black/30 border border-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-2">
-        <span>Credits left:</span> <span id="credits">—</span>
+        <span>Captions left:</span> <span id="credits">—</span>
       </div>
 
       <div class="mt-6 p-6 rounded-2xl border border-white/10 glass">
         <label class="block text-sm opacity-90">Describe your niche or post idea</label>
-        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40 placeholder:text-base sm:placeholder:text-lg" placeholder="e.g., pet grooming tips, morning workout motivation" placeholder="e.g., pet grooming tips, morning workout motivation" />
+        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40" placeholder="e.g., pet grooming tips, morning workout motivation" />
         
-        <div class="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-          <input id="img" type="file" accept="image/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
-          <span class="opacity-80 text-sm sm:ml-2 leading-snug">Optional: upload an image to tailor the caption</span>
+        <div class="mt-3 flex items-center gap-3">
+          <input id="img" type="file" accept="image/*" class="text-sm">
+          <span class="opacity-80 text-sm">Optional: upload an image to tailor the caption</span>
         </div>
 
-        <div class="mt-3 -mx-1 overflow-x-auto whitespace-nowrap sm:mx-0 sm:overflow-visible sm:whitespace-normal flex gap-2 pb-1">
+        <div class="flex flex-wrap gap-2 mt-3">
           <button class="chip">Pet grooming tips</button>
           <button class="chip">Morning workout motivation</button>
           <button class="chip">Homemade pizza reel</button>
@@ -68,7 +62,7 @@
   </section>
 
   <script>
-    const C_KEY='pe_anon', CR_KEY='pe_trial_credits';
+    const C_KEY='pe_anon', CR_KEY='pe_caption_credits';
     function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
     function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
     if(!getCookie(C_KEY)){ setCookie(C_KEY, (crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), 365); }
@@ -142,117 +136,5 @@
       }
     });
   </script>
-
-  <!-- Sign in / Sign up modal -->
-  <div id="authBackdrop" class="hidden fixed inset-0 z-50 bg-black/60"></div>
-  <div id="authModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-black/85 text-white backdrop-blur p-6">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold">Sign in to continue</h3>
-        <button id="authClose" class="text-white/70 hover:text-white">✕</button>
-      </div>
-      <p class="mt-1 text-sm text-white/80">Create an account to unlock your <b>20 free captions</b>.</p>
-      <div class="mt-4 grid gap-3">
-        <input id="authEmail" type="email" placeholder="you@example.com" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-        <input id="authPass" type="password" placeholder="Password (min 6 chars)" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-        <button id="authSignup" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Sign up</button>
-        <button id="authSignin" class="rounded-lg border border-white/20 px-3 py-2 font-medium hover:bg-white/10">Sign in</button>
-        <div class="text-center text-sm text-white/60">or</div>
-        <button id="authGoogle" class="rounded-lg bg-[#4285F4] px-3 py-2 font-medium">Continue with Google</button>
-        <p id="authMsg" class="text-sm text-white/80"></p>
-      </div>
-    </div>
-  </div>
-
-
-<script>
-(function(){
-  const ORIGIN = location.origin;
-  // Supabase init
-  const SUPABASE_URL  = (document.querySelector('meta[name="supabase-url"]')||{}).content || '';
-  const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]')||{}).content || '';
-  const supabase = (window.supabase && SUPABASE_URL && SUPABASE_ANON) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
-
-  function $(id){ return document.getElementById(id); }
-  function show(id){ const el=$(id); if(el) el.classList.remove('hidden'); }
-  function hide(id){ const el=$(id); if(el) el.classList.add('hidden'); }
-  function setAuthCookie(){ document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180); }
-
-  // Hook into existing generate click to detect 402 signin_required
-  const go = document.getElementById('go');
-  if (go) {
-    const orig = go.onclick;
-    go.onclick = async (e)=>{
-      e && e.preventDefault && e.preventDefault();
-      const prevOut = document.getElementById('out');
-      const prev = prevOut ? prevOut.innerHTML : '';
-      try {
-        const r = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ prompt: topic.value, imageDataUrl: '' }) });
-        if (r.status === 402) {
-          const j = await r.json().catch(()=>({}));
-          if (j && j.error === 'signin_required') {
-            show('authBackdrop'); show('authModal'); return;
-          }
-        }
-        // fallback to original handler if needed
-        if (orig) return orig(e);
-      } catch {
-        if (orig) return orig(e);
-      }
-    };
-  }
-
-  // Modal behavior
-  const close = document.getElementById('authClose');
-  if (close) close.onclick = ()=>{ hide('authBackdrop'); hide('authModal'); };
-
-  async function postSignupEmail(email){
-    try{
-      await fetch('/api/early-access', { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ email, niche:'Trial', source:'Auth modal' }) });
-    }catch{}
-  }
-
-  async function onSignedIn(email){
-    setAuthCookie();
-    await postSignupEmail(email);
-    hide('authBackdrop'); hide('authModal');
-    // refresh credits visual; server enforces true limits
-    const ce=document.getElementById('credits'); if(ce) ce.textContent='20';
-  }
-
-  const msg = document.getElementById('authMsg');
-  const btnUp = document.getElementById('authSignup');
-  const btnIn = document.getElementById('authSignin');
-  const btnGo = document.getElementById('authGoogle');
-  if (btnUp) btnUp.onclick = async ()=>{
-    const email = document.getElementById('authEmail').value.trim();
-    const pass = document.getElementById('authPass').value;
-    if (!supabase) { msg.textContent='Auth not configured.'; return; }
-    msg.textContent='Creating account...';
-    const { error } = await supabase.auth.signUp({ email, password: pass });
-    if (error) { msg.textContent = error.message; return; }
-    msg.textContent='Check your email (confirmation). Granting trial now.';
-    onSignedIn(email);
-  };
-  if (btnIn) btnIn.onclick = async ()=>{
-    const email = document.getElementById('authEmail').value.trim();
-    const pass = document.getElementById('authPass').value;
-    if (!supabase) { msg.textContent='Auth not configured.'; return; }
-    msg.textContent='Signing in...';
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    if (error) { msg.textContent = error.message; return; }
-    onSignedIn(email);
-  };
-  if (btnGo) btnGo.onclick = async ()=>{
-    if (!supabase) { msg.textContent='Auth not configured.'; return; }
-    const { error } = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.href } });
-    if (error) { msg.textContent = error.message; return; }
-    setAuthCookie();
-  };
-})();
-</script>
-
 </body>
 </html>
