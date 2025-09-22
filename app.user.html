@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>postEngineAI — Your captions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--ig:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+    .ig{background-image:var(--ig)}
+    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .chip{display:inline-block;background:#0e141b;color:#fff;border-radius:9999px;padding:.45rem .8rem}
+  </style>
+</head>
+<body class="bg-slate-950 text-white">
+  <header class="border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
+        <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
+      </a>
+      <nav class="text-sm flex items-center gap-3">
+        <a href="#" id="signOutLink" class="opacity-90 hover:opacity-100">Sign out</a>
+        <a href="/pay.html" class="rounded-lg bg-white text-black px-3 py-1.5 font-medium hover:opacity-90">Go Pro ($5/mo)</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="ig">
+    <div class="max-w-5xl mx-auto px-4 py-10">
+      <h1 class="text-3xl sm:text-4xl font-bold">Welcome back 👋</h1>
+      <p class="mt-2 text-white/90">You have a <b>20-caption free trial</b>. Upgrade anytime to <b>500/month</b>.</p>
+
+      <div class="mt-4 inline-flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-3 py-2">
+        <span>Captions left:</span><span id="credits">—</span>
+      </div>
+
+      <div class="mt-6 p-6 rounded-2xl border border-white/10 glass">
+        <label class="block text-sm opacity-90">Describe your niche or post idea</label>
+        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none" placeholder="e.g., new smoothie reel, barbershop promo, travel tips" />
+        <div class="mt-4">
+          <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
+          <span id="hint" class="opacity-80 text-sm ml-2"></span>
+        </div>
+        <div id="out" class="mt-6 grid gap-4"></div>
+      </div>
+    </div>
+  </section>
+
+<script>
+  function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
+  if(getCookie('pe_auth')!=='1'){ window.location.href='/' ; } // guard
+
+  const creditsEl=document.getElementById('credits');
+  function setCredits(n){ creditsEl.textContent = String(Math.max(0,n)); }
+
+  const topic=document.getElementById('topic');
+  const go=document.getElementById('go');
+  const hint=document.getElementById('hint');
+  const out=document.getElementById('out');
+
+  async function generate(){
+    out.innerHTML=''; hint.textContent='Generating…';
+    try{
+      const res = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: topic.value }) });
+      if (res.status === 402) { window.location.href='/pay.html'; return; }
+      const j = await res.json();
+      (j.captions||[]).forEach(text=>{
+        const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
+        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
+        card.appendChild(pre); out.appendChild(card);
+      });
+      setCredits((j.remaining ?? 20) - 1);
+      hint.textContent='';
+    }catch(e){ hint.textContent='Error: '+e.message; }
+  }
+  go.addEventListener('click', generate);
+
+  // initial fetch to get remaining (ping without consuming if your API supports a "noop")
+  (async()=>{
+    try{
+      const res = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: ' ' }) });
+      if (res.status === 402) { window.location.href='/pay.html'; return; }
+      const j = await res.json();
+      setCredits(j.remaining ?? 20);
+      document.getElementById('out').innerHTML='';
+    }catch{ setCredits(20); }
+  })();
+
+<script>
+  // Sign out: clear cookie and go back to guest landing
+  (function(){
+    var el = document.getElementById('signOutLink');
+    if(!el) return;
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
+      window.location.href = '/';
+    });
+  })();
+</script>
+</body>
+
+</html>

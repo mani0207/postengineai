@@ -1,140 +1,159 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>postEngineAI — Real Demo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>postEngineAI — Free demo (2 captions)</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase Auth (email/password + Google) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="supabase-url" content="__SUPABASE_URL__">
+  <meta name="supabase-anon" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzdGltb2V5c3Z6c2ttcm5laGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MjIwODgsImV4cCI6MjA3MzM5ODA4OH0.Pe9RUEHM1xK2qqK7n13M7ErAgZcuAVSGXDq1Yr2aP1o">
   <style>
-    :root{--ig-grad:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
-    .ig-gradient{background-image:var(--ig-grad)}
-    .chip{background:#0e141b;border:1px solid #1b2430;color:#dbe4ff;padding:.35rem .7rem;border-radius:.8rem;font-size:.9rem}
-    .cap-card{background:#0e141b;border:1px solid #1b2430;border-radius:1rem;padding:1rem;color:#e5e7eb}
-    .cap-actions button{background:#101826;border:1px solid #1b2430;color:#dbe4ff;padding:.45rem .7rem;border-radius:.7rem;font-size:.85rem}
-    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    :root{--ig:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+    .ig{background-image:var(--ig)}
+    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .chip{display:inline-block;background:#0e141b;color:#fff;border-radius:9999px;padding:.45rem .8rem}
   </style>
 </head>
 <body class="bg-slate-950 text-white">
-  <header class="sticky top-0 z-40 border-b border-white/10 glass">
+  <header class="border-b border-white/10">
     <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
       <a href="/" class="flex items-center gap-2">
         <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
         <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
       </a>
-      <a href="/#pricing" class="text-sm underline">Pricing</a>
+      <nav class="text-sm flex items-center gap-3">
+        <a href="#" id="openAuthLink" class="opacity-90 hover:opacity-100">Sign in</a>
+        <a href="/pay.html" class="rounded-lg bg-white text-black px-3 py-1.5 font-medium hover:opacity-90">Go Pro</a>
+      </nav>
     </div>
   </header>
 
-  <section class="ig-gradient">
-    <div class="max-w-5xl mx-auto px-4 py-14">
+  <section class="ig">
+    <div class="max-w-5xl mx-auto px-4 py-10">
       <h1 class="text-3xl sm:text-4xl font-bold">Real demo — powered by ChatGPT</h1>
-      <p class="mt-2 text-slate-100">Guest users: 2 captions free. Sign in to unlock 20-caption trial.</p>
+      <p class="mt-2 text-white/90">Guest users: <b>2 captions free</b>. Sign up to unlock <b>20-caption trial</b>.</p>
 
-      <div class="mt-5 text-sm bg-black/30 border border-white/10 rounded-xl px-3 py-2 inline-flex items-center gap-2">
-        <span>Captions left:</span> <span id="credits">—</span>
+      <div class="mt-4 inline-flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-3 py-2">
+        <span>Captions left:</span><span id="credits">2</span>
       </div>
 
       <div class="mt-6 p-6 rounded-2xl border border-white/10 glass">
         <label class="block text-sm opacity-90">Describe your niche or post idea</label>
-        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-white/40" placeholder="e.g., pet grooming tips, morning workout motivation" />
-        
-        <div class="mt-3 flex items-center gap-3">
-          <input id="img" type="file" accept="image/*" class="text-sm">
-          <span class="opacity-80 text-sm">Optional: upload an image to tailor the caption</span>
+        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none" placeholder="e.g., pet grooming tips, morning workout motivation" />
+        <div class="mt-3 -mx-1 overflow-x-auto whitespace-nowrap flex gap-2 pb-1">
+          <button class="chip" onclick="topic.value='Pet grooming tips'">Pet grooming tips</button>
+          <button class="chip" onclick="topic.value='Morning workout motivation'">Morning workout motivation</button>
+          <button class="chip" onclick="topic.value='Homemade pizza reel'">Homemade pizza reel</button>
+          <button class="chip" onclick="topic.value='Salon promo for summer'">Salon promo for summer</button>
         </div>
-
-        <div class="flex flex-wrap gap-2 mt-3">
-          <button class="chip">Pet grooming tips</button>
-          <button class="chip">Morning workout motivation</button>
-          <button class="chip">Homemade pizza reel</button>
-          <button class="chip">Salon promo for summer</button>
-        </div>
-
-        <div class="mt-5 flex items-center gap-3">
+        <div class="mt-4">
           <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
-          <span id="hint" class="opacity-80 text-sm"></span>
+          <span id="hint" class="opacity-80 text-sm ml-2"></span>
         </div>
-
-        <div id="preview" class="mt-4"></div>
         <div id="out" class="mt-6 grid gap-4"></div>
       </div>
     </div>
   </section>
 
-  <script>
-    const C_KEY='pe_anon', CR_KEY='pe_caption_credits';
-    function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
-    function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
-    if(!getCookie(C_KEY)){ setCookie(C_KEY, (crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), 365); }
-    if(localStorage.getItem(CR_KEY)===null){ localStorage.setItem(CR_KEY,'20'); }
+  <!-- Auth Modal -->
+  <div id="authBackdrop" class="hidden fixed inset-0 z-50 bg-black/60"></div>
+  <div id="authModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-black/85 text-white backdrop-blur p-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Create your account</h3>
+        <button id="authClose" class="text-white/70 hover:text-white">✕</button>
+      </div>
+      <p class="mt-1 text-sm text-white/80">Sign up to unlock your <b>20-caption free trial</b>.</p>
+      <div class="mt-4 grid gap-3">
+        <input id="authEmail" type="email" placeholder="you@example.com" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+        <input id="authPass" type="password" placeholder="Password (min 6 chars)" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+        <button id="authSignup" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Sign up</button>
+        <button id="authSignin" class="rounded-lg border border-white/20 px-3 py-2 font-medium hover:bg-white/10">I already have an account</button>
+        <div class="text-center text-sm text-white/60">or</div>
+        <button id="authGoogle" class="rounded-lg bg-[#4285F4] px-3 py-2 font-medium">Continue with Google</button>
+        <p id="authMsg" class="text-sm text-white/80"></p>
+      </div>
+    </div>
+  </div>
 
-    const creditsEl = document.getElementById('credits');
-    const topic = document.getElementById('topic');
-    const img = document.getElementById('img');
-    const go = document.getElementById('go');
-    const hint = document.getElementById('hint');
-    const out = document.getElementById('out');
-    const preview = document.getElementById('preview');
-    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{ topic.value=b.textContent; }));
+<script>
+  // Helpers
+  function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
+  function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
+  const C_KEY='pe_anon';
+  if(!getCookie(C_KEY)){ setCookie(C_KEY, (crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), 365); }
 
-    function getCredits(){ return parseInt(localStorage.getItem(CR_KEY)||'0',10); }
-    function setCredits(n){ localStorage.setItem(CR_KEY,String(Math.max(0,n))); renderCredits(); }
-    function renderCredits(){ creditsEl.textContent = getCredits(); }
-    renderCredits();
+  const creditsEl = document.getElementById('credits');
+  function getCredits(){ return parseInt(localStorage.getItem('pe_guest_credits')||'2',10); }
+  function setCredits(n){ localStorage.setItem('pe_guest_credits', String(Math.max(0,n))); creditsEl.textContent = getCredits(); }
+  setCredits(getCredits());
 
-    img.addEventListener('change', ()=>{
-      out.innerHTML=''; preview.innerHTML='';
-      const file = img.files?.[0]; if(!file) return;
-      const url = URL.createObjectURL(file);
-      const el = document.createElement('img'); el.src = url; el.className='mt-2 h-32 rounded-lg border border-white/10 object-cover';
-      preview.appendChild(el);
-    });
+  const topic = document.getElementById('topic');
+  const go = document.getElementById('go');
+  const hint = document.getElementById('hint');
+  const out = document.getElementById('out');
 
-    async function fileToDataUrl(file){
-      return new Promise((resolve,reject)=>{
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = reject;
-        r.readAsDataURL(file);
+  // Supabase init (for signup)
+  const SUPABASE_URL  = (document.querySelector('meta[name="supabase-url"]')||{}).content || '';
+  const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]')||{}).content || '';
+  const supabase = (window.supabase && SUPABASE_URL && SUPABASE_ANON) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+
+  function show(id){document.getElementById(id).classList.remove('hidden');}
+  function hide(id){document.getElementById(id).classList.add('hidden');}
+  function openAuth(){ show('authBackdrop'); show('authModal'); }
+  function closeAuth(){ hide('authBackdrop'); hide('authModal'); document.getElementById('authMsg').textContent=''; }
+  document.getElementById('authClose').onclick = closeAuth;
+  document.getElementById('openAuthLink').onclick = (e)=>{ e.preventDefault(); openAuth(); };
+
+  async function redirectToApp(){ window.location.href = '/app.user.html'; }
+
+  async function onSignedIn(email){ 
+    document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180);
+    try{ await fetch('/api/early-access', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, niche:'Trial', source:'Guest modal' }) }); }catch{}
+    await redirectToApp();
+  }
+
+  document.getElementById('authSignup').onclick = async ()=>{
+    const email = document.getElementById('authEmail').value.trim();
+    const pass  = document.getElementById('authPass').value;
+    const { error } = await supabase.auth.signUp({ email, password: pass });
+    const msg = document.getElementById('authMsg');
+    if (error) { msg.textContent = error.message; return; }
+    msg.textContent = 'Check your email to confirm.';
+    onSignedIn(email);
+  };
+  document.getElementById('authSignin').onclick = async ()=>{
+    const email = document.getElementById('authEmail').value.trim();
+    const pass  = document.getElementById('authPass').value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    const msg = document.getElementById('authMsg');
+    if (error) { msg.textContent = error.message; return; }
+    onSignedIn(email);
+  };
+  document.getElementById('authGoogle').onclick = async ()=>{
+    const result = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + '/app.user.html' } });
+    if (result && result.error) { document.getElementById('authMsg').textContent = result.error.message; return; }
+  };
+
+  async function generate(){
+    if (getCredits() <= 0) { openAuth(); return; }
+    out.innerHTML=''; hint.textContent='Generating…';
+    try{
+      const res = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: topic.value }) });
+      if (res.status === 402) { openAuth(); return; }
+      const j = await res.json();
+      (j.captions||[]).forEach(text=>{
+        const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
+        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
+        card.appendChild(pre); out.appendChild(card);
       });
-    }
-
-    go.addEventListener('click', async ()=>{
-      out.innerHTML=''; hint.textContent='Generating…';
-      let imageDataUrl = '';
-      const file = img.files?.[0];
-      if (file) imageDataUrl = await fileToDataUrl(file);
-      try{
-        const res = await fetch('/api/generate', {
-          method:'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: topic.value, imageDataUrl })
-        });
-        if (res.status === 402) {
-          const j = await res.json();
-          hint.textContent = 'Free credits used up. Please upgrade.';
-          setCredits(j.remaining ?? getCredits());
-          return;
-        }
-        const j = await res.json();
-        if (!res.ok) throw new Error(j.error || 'Server error');
-        setCredits(j.remaining ?? getCredits()); // server may control
-        (j.captions||[]).forEach(text=>{
-          const card=document.createElement('div'); card.className='cap-card';
-          const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
-          const actions=document.createElement('div'); actions.className='cap-actions flex gap-2';
-          const copy=document.createElement('button'); copy.textContent='📋 Copy';
-          copy.onclick=async()=>{await navigator.clipboard.writeText(text);copy.textContent='✅ Copied';setTimeout(()=>copy.textContent='📋 Copy',1200);};
-          const share=document.createElement('button'); share.textContent='📤 Share'; share.onclick=()=>{ const u='https://wa.me/?text='+encodeURIComponent(text); window.open(u,'_blank','noopener'); };
-          actions.appendChild(copy); actions.appendChild(share);
-          card.appendChild(pre); card.appendChild(actions);
-          out.appendChild(card);
-        });
-        hint.textContent='';
-      }catch(e){
-        hint.textContent='Error: '+e.message;
-      }
-    });
-  </script>
+      setCredits(getCredits()-1);
+      hint.textContent='';
+    }catch(e){ hint.textContent='Error: '+e.message; }
+  }
+  go.addEventListener('click', generate);
+</script>
 </body>
 </html>
