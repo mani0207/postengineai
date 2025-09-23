@@ -53,6 +53,14 @@
           <button class="chip" onclick="topic.value='Homemade pizza reel'">Homemade pizza reel</button>
           <button class="chip" onclick="topic.value='Salon promo for summer'">Salon promo for summer</button>
         </div>
+        <!-- Media options (optional image; location auto on server) -->
+        <div class="mt-4 grid gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label for="img" class="text-sm opacity-90">Optional image</label>
+            <input id="img" type="file" accept="image/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
+          </div>
+          <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
+        </div>
         <div class="mt-4">
           <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
           <span id="hint" class="opacity-80 text-sm ml-2"></span>
@@ -99,6 +107,31 @@
   const go = document.getElementById('go');
   const hint = document.getElementById('hint');
   const out = document.getElementById('out');
+
+  // Image -> DataURL helper
+  function fileToDataUrl(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+  // Preview
+  const imgInput = document.getElementById('img');
+  const imgPreview = document.getElementById('imgPreview');
+  if (imgInput && imgPreview){
+    imgInput.addEventListener('change', async ()=>{
+      const f = imgInput.files && imgInput.files[0];
+      if(!f){ imgPreview.classList.add('hidden'); imgPreview.src=''; return; }
+      try{
+        const url = await fileToDataUrl(f);
+        imgPreview.src = url;
+        imgPreview.classList.remove('hidden');
+      }catch{ imgPreview.classList.add('hidden'); }
+    });
+  }
+
 
   
   // Supabase init (for signup)
@@ -154,11 +187,23 @@
   };
 
   
+  
   async function generate(){
-    if (getCredits() <= 0) { openAuth(); return; }
+    if (getCredits && getCredits() <= 0) { openAuth(); return; }
     out.innerHTML=''; hint.textContent='Generating…';
+
+    let imageDataUrl = '';
     try{
-      const res = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: topic.value }) });
+      const f = (document.getElementById('img')||{}).files?.[0];
+      if (f) imageDataUrl = await fileToDataUrl(f);
+    }catch{}
+
+    try{
+      const res = await fetch('/api/generate', { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({ prompt: topic.value, imageDataUrl })
+      });
       if (!res.ok) {
         if (res.status === 402) { openAuth(); return; }
         const text = await res.text().catch(()=>'');
@@ -169,7 +214,27 @@
       (j.captions||[]).forEach(text=>{
         const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
         const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
-        card.appendChild(pre); out.appendChild(card);
+
+        // Render hashtags from backend (if present)
+        const tagWrap=document.createElement('div'); tagWrap.className='mt-2 pt-2 border-t border-white/10';
+        const tagTitle=document.createElement('div'); tagTitle.className='text-sm opacity-80 mb-1'; tagTitle.textContent='Hashtags';
+        const tagLine=document.createElement('div'); tagLine.className='text-sm opacity-90 break-words';
+        tagLine.textContent = (j.hashtags && j.hashtags.length) ? j.hashtags.join(' ') : '';
+
+        // Actions
+        const actions=document.createElement('div'); actions.className='mt-3 flex gap-2';
+        const copyCap=document.createElement('button'); copyCap.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyCap.textContent='📋 Copy caption';
+        copyCap.onclick=async()=>{await navigator.clipboard.writeText(text);copyCap.textContent='✅ Copied';setTimeout(()=>copyCap.textContent='📋 Copy caption',1200);};
+        const copyTags=document.createElement('button'); copyTags.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyTags.textContent='🏷️ Copy hashtags';
+        copyTags.onclick=async()=>{await navigator.clipboard.writeText(tagLine.textContent);copyTags.textContent='✅ Copied';setTimeout(()=>copyTags.textContent='🏷️ Copy hashtags',1200);};
+
+        tagWrap.appendChild(tagTitle); tagWrap.appendChild(tagLine);
+        actions.appendChild(copyCap); actions.appendChild(copyTags);
+
+        card.appendChild(pre);
+        card.appendChild(tagWrap);
+        card.appendChild(actions);
+        out.appendChild(card);
       });
       setCredits(getCredits()-1);
       hint.textContent='';

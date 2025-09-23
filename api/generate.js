@@ -109,7 +109,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    // Rough location from hosting headers (Vercel)
+const city = req.headers['x-vercel-ip-city'] || '';
+const country = req.headers['x-vercel-ip-country'] || '';
+const region = req.headers['x-vercel-ip-country-region'] || '';
+const locationStr = [city, region, country].filter(Boolean).join(', ');
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const messages = [
       { role: 'system', content: makeSystemPrompt() },
     ];
@@ -128,6 +134,37 @@ export default async function handler(req, res) {
     });
 
     let text = completion.choices?.[0]?.message?.content || '[]';
+
+// Generate hashtags via OpenAI (min 6)
+const hashPrompt = [
+  'You generate effective, non-spammy hashtags for Instagram/TikTok.',
+  'Return JSON: {"hashtags": ["#tag1", "#tag2", ...]} with 12-20 items.',
+  'Lowercase, no repeats, max 30 chars per tag, avoid banned/overly generic tags.',
+  locationStr ? `Prioritize local discoverability around: ${locationStr}` : 'No explicit location available.',
+].join('\n');
+const hashMessages = [
+  { role: 'system', content: hashPrompt },
+  { role: 'user', content: JSON.stringify({ topic: prompt, location: locationStr||null }) }
+];
+const hashComp = await client.chat.completions.create({
+  model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+  temperature: 0.6,
+  response_format: { type: 'json_object' },
+  messages: hashMessages,
+});
+let hashtags = [];
+try {
+  const parsedH = JSON.parse(hashComp.choices?.[0]?.message?.content || '{}');
+  if (Array.isArray(parsedH.hashtags)) hashtags = parsedH.hashtags.filter(Boolean);
+} catch {}
+if (hashtags.length < 6) {
+  // simple fallback if model fails
+  const base = (prompt||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().split(/\s+/).filter(Boolean).slice(0,5);
+  hashtags = Array.from(new Set([
+    ...base.map(w=>`#${w}`), '#reels', '#trending', '#creator',
+    locationStr ? `#${locationStr.toLowerCase().replace(/[^a-z0-9]/g,'')}` : null
+  ].filter(Boolean)));
+}
     // Try to parse as array; support object with {captions:[...]} too.
     let captions = [];
     try {
@@ -151,7 +188,7 @@ export default async function handler(req, res) {
       await decrementCredits(supa, user.id, newRemaining);
     }
 
-    return res.status(200).json({ ok: true, captions, remaining: user.is_pro ? null : newRemaining, isPro: !!user.is_pro });
+    return res.status(200).json({ ok: true, captions, hashtags, remaining: user.is_pro ? null : newRemaining, isPro: !!user.is_pro, location: locationStr || null });
   } catch (e) {
     console.error('generate error:', e);
     return res.status(500).json({ error: 'Server error', detail: String(e) });
