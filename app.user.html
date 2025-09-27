@@ -58,9 +58,46 @@
   </section>
 
 <script>
-  // ---- Auth guard (same cookie used in index flow) ----
-  function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
-  if(getCookie('pe_auth')!=='1'){ window.location.href='/' ; }
+// ---- Auth guard (OAuth-aware) ----
+function getCookie(k){
+  return document.cookie.split(';').map(s=>s.trim()).filter(Boolean)
+    .reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];
+}
+
+const SUPABASE_URL  = (document.querySelector('meta[name="supabase-url"]')||{}).content || '';
+const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]')||{}).content || '';
+const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
+
+(async function ensureSession(){
+  try {
+    if (!sb) {
+      // Fallback to cookie if supabase isn't available
+      if (getCookie('pe_auth') !== '1') window.location.href = '/';
+      return;
+    }
+    // After OAuth redirect, Supabase stores the session. Read it now.
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      // Set our cookie for parity with email/password flow
+      document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180);
+    } else {
+      window.location.href = '/';
+      return;
+    }
+    // Keep page in sync if user signs out elsewhere
+    sb.auth.onAuthStateChange((_event, s) => {
+      if (!s) {
+        document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
+        window.location.href = '/';
+      }
+    });
+  } catch (e) {
+    console.error('Auth session check failed:', e);
+    window.location.href = '/';
+  }
+})();
 
   // ---- Credits UI ----
   const creditsEl=document.getElementById('credits');
