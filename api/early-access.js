@@ -33,19 +33,20 @@ async function getTransporter() {
 async function sendOwnerEmail({ name, email, niche, handle, source }) {
   try {
     const tx = await getTransporter(); if (!tx) return;
-    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // MUST be a verified sender in Mailjet
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER;
     const to = process.env.NOTIFY_TO || 'manisundar.92@gmail.com';
     await tx.sendMail({
       from, to,
-      subject: `New early-access signup: ${email}`,
+      subject: `New signup — ${email} | 20 free captions unlocked`,
       html: `
-        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.5;">
-          <h2 style="margin:0 0 8px">New signup</h2>
-          <p><strong>Name:</strong> ${name || '-'}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Niche:</strong> ${niche || '-'}</p>
-          <p><strong>Handle:</strong> ${handle || '-'}</p>
-          <p><strong>Source:</strong> ${source || '-'}</p>
+        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.55;">
+          <h2 style="margin:0 0 8px">New early-access signup</h2>
+          <p style="margin:8px 0 0 0;"><strong>Email:</strong> ${email}</p>
+          <p style="margin:4px 0 0 0;"><strong>Name:</strong> ${name || '-'}</p>
+          <p style="margin:4px 0 0 0;"><strong>Niche:</strong> ${niche || '-'}</p>
+          <p style="margin:4px 0 0 0;"><strong>Handle:</strong> ${handle || '-'}</p>
+          <p style="margin:4px 0 0 0;"><strong>Source:</strong> ${source || '-'}</p>
+          <p style="margin:12px 0 0 0; color:#0f172a"><em>Plan reminder:</em> $5/mo after trial.</p>
         </div>`
     });
   } catch (err) {
@@ -56,22 +57,57 @@ async function sendOwnerEmail({ name, email, niche, handle, source }) {
 async function sendUserConfirmEmail({ name, email }) {
   try {
     const tx = await getTransporter(); if (!tx || !email) return;
-    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // MUST be verified in Mailjet
+    const from = process.env.NOTIFY_FROM || process.env.SMTP_USER; // MUST be verified
+    const logoUrl = process.env.BRAND_LOGO_URL || 'https://postengineai.com/header-logo-tight.png';
+
     await tx.sendMail({
       from,
       to: email,
-      subject: `You're on the waitlist — postEngineAI`,
+      subject: `Thanks for signing up — your 20 free captions are ready | postEngineAI`,
       html: `
-        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.6;">
-          <h2 style="margin:0 0 10px;">Thanks for joining early access${name ? `, ${name}` : ''}!</h2>
-          <p>We’ll email your invite as soon as your spot opens up.</p>
-          <ul>
-            <li>Caption ideas, stories, and hashtags tailored to your niche.</li>
-            <li>Your price is locked at <strong>$9/mo</strong> as an early member.</li>
-          </ul>
-          <p style="margin-top:12px;">Questions? Just reply to this email.</p>
-          <p style="margin-top:20px;">— Team postEngineAI</p>
-        </div>`
+        <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;line-height:1.6;color:#0f172a;background:#0b1220;padding:24px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;margin:0 auto;background:#0e141b;border-radius:16px;border:1px solid rgba(255,255,255,0.08);">
+            <tr>
+              <td style="padding:20px 24px 0 24px;text-align:center;">
+                <img src="${logoUrl}" alt="postEngineAI" width="120" height="auto" style="max-width:140px;border:0;display:inline-block;" />
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 24px 0 24px;text-align:center;">
+                <h1 style="margin:8px 0 0 0;font-size:20px;color:#ffffff;">Thanks for signing up${name ? `, ${name}` : ''}! 🎉</h1>
+                <p style="margin:10px 0 0 0;color:#cbd5e1;">You’ve unlocked <strong>20 free caption generations</strong> to try postEngineAI.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 24px 0 24px;">
+                <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">
+                  <p style="margin:0 0 8px 0;color:#e2e8f0;">What you can do:</p>
+                  <ul style="margin:0;padding-left:18px;color:#cbd5e1;">
+                    <li>Generate 6 varied captions per click (playful, punchy, CTA, etc.).</li>
+                    <li>Optional image upload to tailor captions to your media.</li>
+                    <li>Auto-generated, location-aware hashtags.</li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 24px 0 24px;">
+                <p style="margin:0;color:#cbd5e1;">Love it? Upgrade anytime for just <strong style="color:#fff;">$5/mo</strong> to keep the ideas flowing.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 24px 24px 24px;text-align:center;">
+                <a href="https://postengineai.com/app.user.html" 
+                   style="display:inline-block;background:#ffffff;color:#000000;font-weight:600;text-decoration:none;padding:10px 14px;border-radius:10px;">
+                  Open postEngineAI
+                </a>
+                <p style="margin:12px 0 0 0;font-size:13px;color:#94a3b8;">Questions? Just reply to this email.</p>
+                <p style="margin:8px 0 0 0;font-size:12px;color:#64748b;">— Team postEngineAI</p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      `
     });
   } catch (err) {
     console.error('User confirmation email failed:', err?.response || err);
@@ -81,8 +117,18 @@ async function sendUserConfirmEmail({ name, email }) {
 // ---------- Main handler ----------
 export default async function handler(req, res) {
   // CORS
-  const ORIGIN = 'https://postengineai.com';
-  res.setHeader('Access-Control-Allow-Origin', ORIGIN);
+  const ALLOWED_ORIGINS = new Set([
+  'https://postengineai.com',
+  // Add your Vercel preview domains here:
+  'https://postengineai.vercel.app',
+  // Local dev:
+  'http://localhost:3000'
+]);
+const reqOrigin = (req.headers.origin || '').toString();
+if (ALLOWED_ORIGINS.has(reqOrigin)) {
+  res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+  res.setHeader('Vary', 'Origin');
+}
   res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
