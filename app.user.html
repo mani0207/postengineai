@@ -11,6 +11,10 @@
     .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
     .chip{display:inline-block;background:#0e141b;color:#fff;border-radius:9999px;padding:.45rem .8rem}
   </style>
+  <!-- Supabase Auth (needed to read the OAuth session after redirect) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="supabase-url" content="https://gstimoeysvzskmrnehfv.supabase.co">
+  <meta name="supabase-anon" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzdGltb2V5c3Z6c2ttcm5laGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MjIwODgsImV4cCI6MjA3MzM5ODA4OH0.Pe9RUEHM1xK2qqK7n13M7ErAgZcuAVSGXDq1Yr2aP1o">
 </head>
 <body class="bg-slate-950 text-white">
   <header class="border-b border-white/10">
@@ -73,20 +77,16 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
 (async function ensureSession(){
   try {
     if (!sb) {
-      // Fallback to cookie if supabase isn't available
       if (getCookie('pe_auth') !== '1') window.location.href = '/';
       return;
     }
-    // After OAuth redirect, Supabase stores the session. Read it now.
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
-      // Set our cookie for parity with email/password flow
       document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180);
     } else {
       window.location.href = '/';
       return;
     }
-    // Keep page in sync if user signs out elsewhere
     sb.auth.onAuthStateChange((_event, s) => {
       if (!s) {
         document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
