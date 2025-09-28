@@ -165,15 +165,52 @@
     await redirectToApp();
   }
 
-  document.getElementById('authSignup').onclick = async ()=>{
-    if(!supabase){ document.getElementById('authMsg').textContent='Auth not configured (missing Supabase URL/Key).'; return; }
+  document.getElementById('authSignup').onclick = async () => {
+    if (!supabase) {
+      document.getElementById('authMsg').textContent = 'Auth not configured (missing Supabase URL/Key).';
+      return;
+    }
     const email = document.getElementById('authEmail').value.trim();
     const pass  = document.getElementById('authPass').value;
-    const { error } = await supabase.auth.signUp({ email, password: pass });
-    const msg = document.getElementById('authMsg');
+    const msg   = document.getElementById('authMsg');
+
+    // Ask Supabase to send a confirm email that redirects back to your app
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: pass,
+      options: {
+        emailRedirectTo: window.location.origin + '/app.user.html'
+      }
+    });
+
     if (error) { msg.textContent = error.message; return; }
-    msg.textContent = 'Check your email to confirm.';
-    onSignedIn(email);
+
+    // DO NOT redirect here. Wait for the user to confirm.
+    msg.innerHTML = `
+      ✅ Check your inbox to confirm your email.<br/>
+      After confirming, you’ll be signed in and redirected automatically.
+      <br/><br/>
+      <button id="resendConfirm" class="underline">Resend confirmation email</button>
+    `;
+
+    const resendBtn = document.getElementById('resendConfirm');
+    if (resendBtn) {
+      resendBtn.onclick = async () => {
+        try {
+          // Supabase doesn’t have a direct “resend confirm” helper;
+          // triggering signUp again with the same email will send another email (and no new user will be created).
+          const r = await supabase.auth.signUp({
+            email,
+            password: pass,
+            options: { emailRedirectTo: window.location.origin + '/app.user.html' }
+          });
+          if (r.error) { msg.textContent = r.error.message; return; }
+          msg.textContent = 'Confirmation email resent. Please check your inbox.';
+        } catch (e) {
+          msg.textContent = (e?.message || 'Could not resend confirmation email.');
+        }
+      };
+    }
   };
   document.getElementById('authSignin').onclick = async ()=>{
     if(!supabase){ document.getElementById('authMsg').textContent='Auth not configured (missing Supabase URL/Key).'; return; }
