@@ -248,6 +248,24 @@
   }
 
   go.addEventListener('click', generate);
+// Helper links
+(function handleAuthHelpers(){
+  const msg = document.getElementById('authMsg');
+  const fp = document.getElementById('forgotPass');
+  const gg = document.getElementById('useGoogleHint');
+  if (fp) fp.onclick = async () => {
+    if(!supabase){ msg.textContent='Auth not configured.'; return; }
+    const email = document.getElementById('authEmail').value.trim();
+    if(!email){ msg.textContent='Enter your email first.'; return; }
+    try {
+      await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/app.user.html' });
+      msg.textContent = 'Password reset email sent.';
+    } catch(e){ msg.textContent = (e?.message||e); }
+  };
+  if (gg) gg.onclick = () => {
+    msg.innerHTML = 'If you signed up with Google, use <b>Continue with Google</b> to sign in.';
+  };
+})();
 </script>
 </body>
 </html>
