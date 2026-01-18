@@ -6,7 +6,7 @@
   <title>postEngineAI — Free demo (2 captions)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase Auth (email/password + Google) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
   <meta name="supabase-url" content="https://gstimoeysvzskmrnehfv.supabase.co">
   <meta name="supabase-anon" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzdGltb2V5c3Z6c2ttcm5laGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MjIwODgsImV4cCI6MjA3MzM5ODA4OH0.Pe9RUEHM1xK2qqK7n13M7ErAgZcuAVSGXDq1Yr2aP1o">
   <style>
@@ -97,7 +97,8 @@
   </div>
 
 <script>
-  console.log('index.html JS loaded');
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('index.html DOM ready');
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -326,10 +327,10 @@ if (!getCookie(C_KEY)) {
     msg.innerHTML = 'If you signed up with Google, use <b>Continue with Google</b> to sign in.';
   };
 })();
-</script>
-<script>
-// Marker for handler attachment
-console.log('index.html handlers attached');
+  window.openAuth = openAuth;
+  window.closeAuth = closeAuth;
+  console.log('index.html handlers attached');
+});
 </script>
 </body>
 </html>
