@@ -13,12 +13,25 @@ export default async function handler(req, res) {
       }
   
       const url = `https://pixabay.com/api/music/?key=${key}&q=${encodeURIComponent(q)}&per_page=6`;
-      const r = await fetch(url);
+  
+      const r = await fetch(url, {
+        headers: {
+          'User-Agent': 'postengineai/1.0',
+          'Accept': 'application/json'
+        }
+      });
+  
+      const raw = await r.text();
+  
       if (!r.ok) {
-        return res.status(502).json({ error: 'Pixabay request failed' });
+        return res.status(502).json({
+          error: 'Pixabay request failed',
+          status: r.status,
+          body: raw
+        });
       }
   
-      const j = await r.json();
+      const j = JSON.parse(raw);
   
       const items = (j.hits || []).map(h => ({
         id: h.id,
@@ -27,8 +40,8 @@ export default async function handler(req, res) {
         duration: h.duration
       }));
   
-      res.status(200).json(items);
+      return res.status(200).json(items);
     } catch (e) {
-      res.status(500).json({ error: e.message || 'Server error' });
+      return res.status(500).json({ error: e.message || 'Server error' });
     }
   }
