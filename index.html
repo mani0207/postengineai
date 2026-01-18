@@ -154,13 +154,15 @@ if (!getCookie(C_KEY)) {
   (function(){
     const b=document.getElementById('sbBanner');
     if(!b) return;
-    if(!SUPABASE_URL || !SUPABASE_ANON || !window.supabase){ b.classList.remove('hidden'); }
+    if(!SUPABASE_URL || !SUPABASE_ANON){ b.classList.remove('hidden'); }
   })();
 
   function show(id){document.getElementById(id).classList.remove('hidden');}
   function hide(id){document.getElementById(id).classList.add('hidden');}
   function openAuth(){ show('authBackdrop'); show('authModal'); }
   function closeAuth(){ hide('authBackdrop'); hide('authModal'); document.getElementById('authMsg').textContent=''; }
+  window.openAuth = openAuth;
+  window.closeAuth = closeAuth;
   document.getElementById('authClose').onclick = closeAuth;
   document.getElementById('openAuthLink').onclick = (e)=>{ e.preventDefault(); openAuth(); };
 
