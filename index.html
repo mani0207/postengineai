@@ -305,7 +305,10 @@ if (!getCookie(C_KEY)) {
         return;
       }
       const j = await res.json();
-      (j.captions||[]).forEach(text=>{
+      const caps = j.captions || {};
+      const igCaps = Array.isArray(caps.instagram) ? caps.instagram : [];
+
+      igCaps.forEach(text => {
         const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
         const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
 
