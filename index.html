@@ -244,10 +244,16 @@ if (!getCookie(C_KEY)) {
         use.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
         use.textContent = 'Use';
         use.onclick = () => {
-          window._selectedAudio = a;
-          [...list.children].forEach(c => c.classList.remove('ring-2','ring-white'));
-          row.classList.add('ring-2','ring-white');
-        };
+  // clone object to avoid reference issues
+  window._selectedAudio = { ...a };
+
+  console.log('🎵 Selected audio:', window._selectedAudio);
+
+  [...list.children].forEach(c => c.classList.remove('ring-2','ring-white'));
+  row.classList.add('ring-2','ring-white');
+
+  hint.textContent = 'Background music selected ✓';
+};
 
         row.appendChild(audio);
         row.appendChild(use);
@@ -371,6 +377,7 @@ if (!getCookie(C_KEY)) {
   
   // Export video function (FFmpeg backend)
   async function exportFinalVideo() {
+    console.log('Export check → selectedAudio:', window._selectedAudio);
     if (!mediaType || mediaType !== 'video') {
       alert('Please upload a video first');
       return;
