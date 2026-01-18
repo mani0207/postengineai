@@ -101,7 +101,13 @@
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
   const C_KEY='pe_anon';
-  if(!getCookie(C_KEY)){ setCookie(C_KEY, (crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), 365); }
+  function safeUUID() {
+  return 'pe_' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+if (!getCookie(C_KEY)) {
+  setCookie(C_KEY, safeUUID(), 365);
+}
 
   const creditsEl = document.getElementById('credits');
   function getCredits(){ return parseInt(localStorage.getItem('pe_guest_credits')||'2',10); }
