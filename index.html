@@ -141,7 +141,12 @@ if (!getCookie(C_KEY)) {
   if (mediaInput) {
     mediaInput.addEventListener('change', async () => {
       const f = mediaInput.files && mediaInput.files[0];
-      if (!f) return;
+      if (!f) {
+        mediaType = null;
+        imgPreview.classList.add('hidden');
+        videoPreview.classList.add('hidden');
+        return;
+      }
 
       if (f.type.startsWith('image/')) {
         mediaType = 'image';
@@ -161,6 +166,8 @@ if (!getCookie(C_KEY)) {
           if (videoPreview.duration > 30) {
             alert('Video must be 30 seconds or less');
             mediaInput.value = '';
+            mediaType = null;
+            videoPreview.classList.add('hidden');
           }
         };
       }
@@ -276,6 +283,11 @@ if (!getCookie(C_KEY)) {
   
   
   async function generate(){
+    // HARD BLOCK empty submit BEFORE building request
+    if (!topic.value.trim() && !mediaType) {
+      hint.textContent = 'Please enter a topic or upload an image/video.';
+      return;
+    }
     if (getCredits && getCredits() <= 0) { openAuth(); return; }
     out.innerHTML=''; hint.textContent='Generating…';
 
@@ -285,12 +297,6 @@ if (!getCookie(C_KEY)) {
       if (f && mediaType === 'image') imageDataUrl = await fileToDataUrl(f);
     }catch{}
 
-    // Safety: Prevent calling API when nothing is provided
-    if (!topic.value.trim() && !mediaType) {
-      hint.textContent = 'Please enter a topic or upload an image/video.';
-      return;
-    }
-
     try{
       const platforms = [...document.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
       const res = await fetch('/api/generate', { 
@@ -298,7 +304,7 @@ if (!getCookie(C_KEY)) {
         headers:{'Content-Type':'application/json'}, 
         body: JSON.stringify({
           prompt: topic.value,
-          contentType: mediaType || (topic.value.trim() ? 'text' : 'none'),
+          contentType: mediaType || 'text',
           platforms,
           imageDataUrl,
           videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null
@@ -312,7 +318,13 @@ if (!getCookie(C_KEY)) {
       }
       const j = await res.json();
       const caps = j.captions || {};
-      const igCaps = Array.isArray(caps.instagram) ? caps.instagram : [];
+      // Normalize Instagram captions to always be an array
+      let igCaps = [];
+      if (Array.isArray(caps.instagram)) {
+        igCaps = caps.instagram;
+      } else if (caps.instagram && typeof caps.instagram === 'object') {
+        igCaps = [caps.instagram];
+      }
 
       igCaps.forEach(text => {
         const card = document.createElement('div');
