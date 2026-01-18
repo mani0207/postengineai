@@ -38,6 +38,7 @@ function makeSystemPrompt() {
     "- Include relevant emojis sparingly; do not overuse hashtags (0–4).",
     "- If an image is provided, match the caption to the image content.",
     "- Never include quotes or code fences around the JSON.",
+    "Always return captions as plain strings in a JSON array."
   ].join("\\n");
 }
 
@@ -97,12 +98,20 @@ export default async function handler(req, res) {
     const body = await readJsonBody(req);
     const prompt = (body.prompt || '').toString().slice(0, 400);
     const imageDataUrl = (body.imageDataUrl || '').toString();
-    const mediaKind = body.contentType === 'video' ? 'video' : 'image';
+    const mediaKind =
+      body.contentType === 'video'
+        ? 'video'
+        : body.contentType === 'image'
+        ? 'image'
+        : 'text';
     const targetPlatforms = Array.isArray(body.platforms) && body.platforms.length
       ? body.platforms
       : ['instagram'];
     const videoDuration = body.videoMeta?.duration || null;
-    if (!prompt && !imageDataUrl) return res.status(400).json({ error: 'Prompt or image required' });
+    // Allow prompt-only, image-only, or video-only
+    if (!prompt && !imageDataUrl && mediaKind !== 'video' && mediaKind !== 'text') {
+      return res.status(400).json({ error: 'Prompt, image, or video required' });
+    }
 
     // paywall check (each call consumes 4 credits)
     const COST = 1;
@@ -132,12 +141,14 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     ];
 
     const content = [];
-    if (prompt) {
-      content.push({
-        type: 'text',
-        text: `Create ${mediaKind} captions for ${targetPlatforms.join(', ')}. Topic: ${prompt}. Video length: ${videoDuration || 'n/a'} seconds.`
-      });
-    }
+    const topicText = prompt
+      ? `Topic: ${prompt}.`
+      : 'No explicit topic provided. Generate captions based only on the media content.';
+
+    content.push({
+      type: 'text',
+      text: `Create ${mediaKind} captions for ${targetPlatforms.join(', ')}. ${topicText} Video length: ${videoDuration || 'n/a'} seconds.`
+    });
     if (imageDataUrl) content.push({ type: 'image_url', image_url: { url: imageDataUrl } });
     messages.push({ role: 'user', content });
 
@@ -193,6 +204,8 @@ if (hashtags.length < 6) {
       if (m) { try { captions = JSON.parse(m[0]); } catch {} }
     }
     captions = (captions || []).map(s => String(s)).filter(Boolean).slice(0, 6);
+    // Ensure array shape
+    if (!Array.isArray(captions)) captions = [String(captions)];
     if (captions.length === 0) {
       captions = ["Couldn't parse captions. Please try again."];
     }
