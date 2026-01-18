@@ -63,6 +63,16 @@
           <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
           <video id="videoPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
   controls></video>
+          <div id="audioBox" class="hidden mt-4">
+            <div class="text-sm opacity-90 mb-2">🎵 Background music (royalty-free)</div>
+            <div class="flex gap-2 mb-2 flex-wrap">
+              <button class="chip" data-mood="calm">Calm</button>
+              <button class="chip" data-mood="energetic">Energetic</button>
+              <button class="chip" data-mood="cinematic">Cinematic</button>
+              <button class="chip" data-mood="vlog">Vlog</button>
+            </div>
+            <div id="audioList" class="grid gap-2"></div>
+          </div>
         </div>
         <div class="mt-4">
           <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
@@ -138,6 +148,7 @@ if (!getCookie(C_KEY)) {
   const videoPreview = document.getElementById('videoPreview');
   let mediaType = null;
   window._videoFrames = [];
+  window._selectedAudio = null;
 
   if (mediaInput) {
     mediaInput.addEventListener('change', async () => {
@@ -146,6 +157,8 @@ if (!getCookie(C_KEY)) {
         mediaType = null;
         imgPreview.classList.add('hidden');
         videoPreview.classList.add('hidden');
+        document.getElementById('audioBox').classList.add('hidden');
+        window._selectedAudio = null;
         return;
       }
 
@@ -155,6 +168,8 @@ if (!getCookie(C_KEY)) {
         imgPreview.src = url;
         imgPreview.classList.remove('hidden');
         videoPreview.classList.add('hidden');
+        document.getElementById('audioBox').classList.add('hidden');
+        window._selectedAudio = null;
       }
 
       if (f.type.startsWith('video/')) {
@@ -162,6 +177,7 @@ if (!getCookie(C_KEY)) {
         videoPreview.src = URL.createObjectURL(f);
         videoPreview.classList.remove('hidden');
         imgPreview.classList.add('hidden');
+        document.getElementById('audioBox').classList.remove('hidden');
 
         videoPreview.onloadedmetadata = () => {
           if (videoPreview.duration > 30) {
@@ -170,6 +186,8 @@ if (!getCookie(C_KEY)) {
             mediaType = null;
             videoPreview.classList.add('hidden');
             window._videoFrames = [];
+            document.getElementById('audioBox').classList.add('hidden');
+            window._selectedAudio = null;
             return;
           }
 
@@ -195,6 +213,48 @@ if (!getCookie(C_KEY)) {
       }
     });
   }
+  // --- Audio picker logic ---
+  async function loadAudio(mood) {
+    const list = document.getElementById('audioList');
+    list.innerHTML = 'Loading…';
+    try {
+      const r = await fetch('/api/audio-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood })
+      });
+      const items = await r.json();
+      list.innerHTML = '';
+
+      items.forEach(a => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 bg-black/30 border border-white/10 rounded-lg p-2';
+
+        const audio = document.createElement('audio');
+        audio.src = a.preview;
+        audio.controls = true;
+
+        const use = document.createElement('button');
+        use.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
+        use.textContent = 'Use';
+        use.onclick = () => {
+          window._selectedAudio = a;
+          [...list.children].forEach(c => c.classList.remove('ring-2','ring-white'));
+          row.classList.add('ring-2','ring-white');
+        };
+
+        row.appendChild(audio);
+        row.appendChild(use);
+        list.appendChild(row);
+      });
+    } catch (e) {
+      list.innerHTML = 'Failed to load audio';
+    }
+  }
+
+  document.querySelectorAll('#audioBox [data-mood]').forEach(btn => {
+    btn.onclick = () => loadAudio(btn.dataset.mood);
+  });
 
 
   
@@ -330,7 +390,8 @@ if (!getCookie(C_KEY)) {
           platforms,
           imageDataUrl,
           videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null,
-          videoFrames: mediaType === 'video' ? (window._videoFrames || []) : []
+          videoFrames: mediaType === 'video' ? (window._videoFrames || []) : [],
+          selectedAudio: window._selectedAudio
         })
       });
       if (!res.ok) {
