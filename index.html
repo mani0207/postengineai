@@ -97,6 +97,7 @@
   </div>
 
 <script>
+  console.log('index.html JS loaded');
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -148,7 +149,14 @@ if (!getCookie(C_KEY)) {
   // Supabase init (for signup)
   const SUPABASE_URL  = (document.querySelector('meta[name="supabase-url"]')||{}).content || '';
   const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]')||{}).content || '';
-  const supabase = (window.supabase && SUPABASE_URL && SUPABASE_ANON) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+  let supabase = null;
+  try {
+    if (SUPABASE_URL && SUPABASE_ANON && window.supabase && window.supabase.createClient) {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    }
+  } catch (e) {
+    console.error('Supabase init failed', e);
+  }
 
   // Show a banner if no Supabase URL so you know why Sign in doesn't redirect
   (function(){
@@ -163,8 +171,11 @@ if (!getCookie(C_KEY)) {
   function closeAuth(){ hide('authBackdrop'); hide('authModal'); document.getElementById('authMsg').textContent=''; }
   window.openAuth = openAuth;
   window.closeAuth = closeAuth;
-  document.getElementById('authClose').onclick = closeAuth;
-  document.getElementById('openAuthLink').onclick = (e)=>{ e.preventDefault(); openAuth(); };
+  const authCloseBtn = document.getElementById('authClose');
+  if (authCloseBtn) authCloseBtn.onclick = closeAuth;
+
+  const openAuthLinkEl = document.getElementById('openAuthLink');
+  if (openAuthLinkEl) openAuthLinkEl.onclick = (e)=>{ e.preventDefault(); openAuth(); };
 
   async function redirectToApp(){ window.location.href = '/app.user.html'; }
 
