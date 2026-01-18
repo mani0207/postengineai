@@ -41,7 +41,7 @@
 <p class="mt-2 text-white/90">✨ Try <b>20 free captions</b>. Upgrade to <b>200/month for $5</b>.</p>
 
 <div class="mt-4">
-  <button onclick="alert('CLICK WORKS')" class="rounded-xl bg-white text-black px-5 py-3 font-semibold text-lg hover:opacity-90">
+  <button onclick="openAuth()" class="rounded-xl bg-white text-black px-5 py-3 font-semibold text-lg hover:opacity-90">
     ✨ Get 20 Free Captions
   </button>
 </div>
@@ -185,7 +185,8 @@ if (!getCookie(C_KEY)) {
     await redirectToApp();
   }
 
-  document.getElementById('authSignup').onclick = async () => {
+  const authSignupBtn = document.getElementById('authSignup');
+  if (authSignupBtn) authSignupBtn.onclick = async () => {
     if (!supabase) {
       document.getElementById('authMsg').textContent = 'Auth not configured (missing Supabase URL/Key).';
       return;
@@ -232,7 +233,8 @@ if (!getCookie(C_KEY)) {
       };
     }
   };
-  document.getElementById('authSignin').onclick = async ()=>{
+  const authSigninBtn = document.getElementById('authSignin');
+  if (authSigninBtn) authSigninBtn.onclick = async ()=>{
     if(!supabase){ document.getElementById('authMsg').textContent='Auth not configured (missing Supabase URL/Key).'; return; }
     const email = document.getElementById('authEmail').value.trim();
     const pass  = document.getElementById('authPass').value;
@@ -241,7 +243,8 @@ if (!getCookie(C_KEY)) {
     if (error) { msg.textContent = error.message; return; }
     onSignedIn(email);
   };
-  document.getElementById('authGoogle').onclick = async ()=>{
+  const authGoogleBtn = document.getElementById('authGoogle');
+  if (authGoogleBtn) authGoogleBtn.onclick = async ()=>{
     if(!supabase){ document.getElementById('authMsg').textContent='Auth not configured (missing Supabase URL/Key).'; return; }
     const result = await supabase.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + '/app.user.html' } });
     if (result && result.error) { document.getElementById('authMsg').textContent = result.error.message; return; }
@@ -304,7 +307,7 @@ if (!getCookie(C_KEY)) {
     }
   }
 
-  go.addEventListener('click', generate);
+  if (go) go.addEventListener('click', generate);
 // Helper links
 (function handleAuthHelpers(){
   const msg = document.getElementById('authMsg');
@@ -323,6 +326,10 @@ if (!getCookie(C_KEY)) {
     msg.innerHTML = 'If you signed up with Google, use <b>Continue with Google</b> to sign in.';
   };
 })();
+</script>
+<script>
+// Marker for handler attachment
+console.log('index.html handlers attached');
 </script>
 </body>
 </html>
