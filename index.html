@@ -285,6 +285,12 @@ if (!getCookie(C_KEY)) {
       if (f && mediaType === 'image') imageDataUrl = await fileToDataUrl(f);
     }catch{}
 
+    // Safety: Prevent calling API when nothing is provided
+    if (!topic.value.trim() && !mediaType) {
+      hint.textContent = 'Please enter a topic or upload an image/video.';
+      return;
+    }
+
     try{
       const platforms = [...document.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
       const res = await fetch('/api/generate', { 
@@ -292,7 +298,7 @@ if (!getCookie(C_KEY)) {
         headers:{'Content-Type':'application/json'}, 
         body: JSON.stringify({
           prompt: topic.value,
-          contentType: mediaType || 'image',
+          contentType: mediaType || (topic.value.trim() ? 'text' : 'none'),
           platforms,
           imageDataUrl,
           videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null
