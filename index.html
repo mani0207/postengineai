@@ -223,6 +223,10 @@ if (!getCookie(C_KEY)) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mood })
       });
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error('Audio API error ' + r.status + ': ' + t);
+      }
       const items = await r.json();
       list.innerHTML = '';
 
