@@ -8,8 +8,14 @@ export const config = {
     }
   
     try {
-      const { mood } = req.body || {};
-      const q = (mood || 'calm').toString().slice(0, 40);
+      const raw = (mood || 'calm').toString().slice(0, 40).toLowerCase();
+      const moodMap = {
+        calm: 'ambient relaxing soft pad',
+        energetic: 'upbeat energetic fast music',
+        cinematic: 'cinematic trailer epic score',
+        vlog: 'vlog background chill music'
+      };
+      const q = moodMap[raw] || raw;
   
       const key = process.env.FREESOUND_API_KEY;
       if (!key) {
@@ -19,9 +25,9 @@ export const config = {
       const url =
         `https://freesound.org/apiv2/search/text/?` +
         `query=${encodeURIComponent(q)}` +
-        `&filter=duration:[5 TO 30]` +
+        `&filter=duration:[5 TO 60]` +
         `&fields=id,name,previews,license,username,url` +
-        `&page_size=6`;
+        `&page_size=10`;
   
       const r = await fetch(url, {
         headers: {
