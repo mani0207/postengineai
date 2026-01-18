@@ -57,10 +57,12 @@
         <!-- Media options (optional image; location auto on server) -->
         <div class="mt-4 grid gap-3">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label for="img" class="text-sm opacity-90">Optional image</label>
-            <input id="img" type="file" accept="image/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
+            <label for="media" class="text-sm opacity-90">Optional image or video (≤30s)</label>
+            <input id="media" type="file" accept="image/*,video/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
           </div>
           <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
+          <video id="videoPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
+  controls></video>
         </div>
         <div class="mt-4">
           <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
@@ -130,18 +132,38 @@ if (!getCookie(C_KEY)) {
       r.readAsDataURL(file);
     });
   }
-  // Preview
-  const imgInput = document.getElementById('img');
+
+  const mediaInput = document.getElementById('media');
   const imgPreview = document.getElementById('imgPreview');
-  if (imgInput && imgPreview){
-    imgInput.addEventListener('change', async ()=>{
-      const f = imgInput.files && imgInput.files[0];
-      if(!f){ imgPreview.classList.add('hidden'); imgPreview.src=''; return; }
-      try{
+  const videoPreview = document.getElementById('videoPreview');
+  let mediaType = null;
+
+  if (mediaInput) {
+    mediaInput.addEventListener('change', async () => {
+      const f = mediaInput.files && mediaInput.files[0];
+      if (!f) return;
+
+      if (f.type.startsWith('image/')) {
+        mediaType = 'image';
         const url = await fileToDataUrl(f);
         imgPreview.src = url;
         imgPreview.classList.remove('hidden');
-      }catch{ imgPreview.classList.add('hidden'); }
+        videoPreview.classList.add('hidden');
+      }
+
+      if (f.type.startsWith('video/')) {
+        mediaType = 'video';
+        videoPreview.src = URL.createObjectURL(f);
+        videoPreview.classList.remove('hidden');
+        imgPreview.classList.add('hidden');
+
+        videoPreview.onloadedmetadata = () => {
+          if (videoPreview.duration > 30) {
+            alert('Video must be 30 seconds or less');
+            mediaInput.value = '';
+          }
+        };
+      }
     });
   }
 
@@ -259,15 +281,22 @@ if (!getCookie(C_KEY)) {
 
     let imageDataUrl = '';
     try{
-      const f = (document.getElementById('img')||{}).files?.[0];
-      if (f) imageDataUrl = await fileToDataUrl(f);
+      const f = (document.getElementById('media')||{}).files?.[0];
+      if (f && mediaType === 'image') imageDataUrl = await fileToDataUrl(f);
     }catch{}
 
     try{
+      const platforms = [...document.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
       const res = await fetch('/api/generate', { 
         method:'POST', 
         headers:{'Content-Type':'application/json'}, 
-        body: JSON.stringify({ prompt: topic.value, imageDataUrl })
+        body: JSON.stringify({
+          prompt: topic.value,
+          contentType: mediaType || 'image',
+          platforms,
+          imageDataUrl,
+          videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null
+        })
       });
       if (!res.ok) {
         if (res.status === 402) { openAuth(); return; }
@@ -327,8 +356,6 @@ if (!getCookie(C_KEY)) {
     msg.innerHTML = 'If you signed up with Google, use <b>Continue with Google</b> to sign in.';
   };
 })();
-  window.openAuth = openAuth;
-  window.closeAuth = closeAuth;
   console.log('index.html handlers attached');
 });
 </script>

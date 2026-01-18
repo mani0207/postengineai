@@ -97,6 +97,11 @@ export default async function handler(req, res) {
     const body = await readJsonBody(req);
     const prompt = (body.prompt || '').toString().slice(0, 400);
     const imageDataUrl = (body.imageDataUrl || '').toString();
+    const mediaKind = body.contentType === 'video' ? 'video' : 'image';
+    const targetPlatforms = Array.isArray(body.platforms) && body.platforms.length
+      ? body.platforms
+      : ['instagram'];
+    const videoDuration = body.videoMeta?.duration || null;
     if (!prompt && !imageDataUrl) return res.status(400).json({ error: 'Prompt or image required' });
 
     // paywall check (each call consumes 4 credits)
@@ -117,11 +122,22 @@ const locationStr = [city, region, country].filter(Boolean).join(', ');
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const messages = [
-      { role: 'system', content: makeSystemPrompt() },
+      {
+        role: 'system',
+        content: makeSystemPrompt() +
+          `\nContent type: ${mediaKind}.` +
+          `\nPlatforms: ${targetPlatforms.join(', ')}.` +
+          `\nInclude hook, caption, hashtags, and onscreen_text.`
+      },
     ];
 
     const content = [];
-    if (prompt) content.push({ type: 'text', text: `Create Instagram-style captions for: ${prompt}` });
+    if (prompt) {
+      content.push({
+        type: 'text',
+        text: `Create ${mediaKind} captions for ${targetPlatforms.join(', ')}. Topic: ${prompt}. Video length: ${videoDuration || 'n/a'} seconds.`
+      });
+    }
     if (imageDataUrl) content.push({ type: 'image_url', image_url: { url: imageDataUrl } });
     messages.push({ role: 'user', content });
 
@@ -188,7 +204,18 @@ if (hashtags.length < 6) {
       await decrementCredits(supa, user.id, newRemaining);
     }
 
-    return res.status(200).json({ ok: true, captions, hashtags, remaining: user.is_pro ? null : newRemaining, isPro: !!user.is_pro, location: locationStr || null });
+    return res.status(200).json({
+      ok: true,
+      captions: {
+        instagram: captions,
+        whatsapp: captions.slice(0, 3),
+        facebook: captions.slice(0, 3)
+      },
+      hashtags,
+      remaining: user.is_pro ? null : newRemaining,
+      isPro: !!user.is_pro,
+      location: locationStr || null
+    });
   } catch (e) {
     console.error('generate error:', e);
     return res.status(500).json({ error: 'Server error', detail: String(e) });
