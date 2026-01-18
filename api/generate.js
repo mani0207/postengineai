@@ -38,7 +38,10 @@ function makeSystemPrompt() {
     "- Include relevant emojis sparingly; do not overuse hashtags (0–4).",
     "- If an image is provided, match the caption to the image content.",
     "- Never include quotes or code fences around the JSON.",
-    "Always return captions as plain strings in a JSON array."
+    "Always return captions as plain strings in a JSON array.",
+    "For video inputs, you will receive representative video frames.",
+    "Base captions ONLY on what is visible in the frames and the video duration.",
+    "Do NOT invent actions, objects, or scenes not visible."
   ].join("\\n");
 }
 
@@ -108,6 +111,7 @@ export default async function handler(req, res) {
       ? body.platforms
       : ['instagram'];
     const videoDuration = body.videoMeta?.duration || null;
+    const videoFrames = Array.isArray(body.videoFrames) ? body.videoFrames : [];
     // Allow prompt-only, image-only, or video-only
     if (!prompt && !imageDataUrl && mediaKind !== 'video' && mediaKind !== 'text') {
       return res.status(400).json({ error: 'Prompt, image, or video required' });
@@ -150,11 +154,16 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       text: `Create ${mediaKind} captions for ${targetPlatforms.join(', ')}. ${topicText} Video length: ${videoDuration || 'n/a'} seconds.`
     });
     if (imageDataUrl) content.push({ type: 'image_url', image_url: { url: imageDataUrl } });
+    if (mediaKind === 'video' && videoFrames.length) {
+      for (const f of videoFrames.slice(0, 8)) {
+        content.push({ type: 'image_url', image_url: { url: f } });
+      }
+    }
     messages.push({ role: 'user', content });
 
     const completion = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      temperature: 0.8,
+      temperature: mediaKind === 'video' ? 0.4 : 0.8,
       messages,
       response_format: { type: 'json_object' }, // we'll wrap array in an object to be safe
       // But since we asked for array, some models may not honor; we handle parsing below.

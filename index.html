@@ -137,6 +137,7 @@ if (!getCookie(C_KEY)) {
   const imgPreview = document.getElementById('imgPreview');
   const videoPreview = document.getElementById('videoPreview');
   let mediaType = null;
+  window._videoFrames = [];
 
   if (mediaInput) {
     mediaInput.addEventListener('change', async () => {
@@ -168,7 +169,28 @@ if (!getCookie(C_KEY)) {
             mediaInput.value = '';
             mediaType = null;
             videoPreview.classList.add('hidden');
+            window._videoFrames = [];
+            return;
           }
+
+          // Sample frames: 1 frame per second, max 8 frames
+          window._videoFrames = [];
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = videoPreview.videoWidth;
+          canvas.height = videoPreview.videoHeight;
+
+          const maxFrames = Math.min(8, Math.floor(videoPreview.duration));
+          let t = 0;
+
+          videoPreview.onseeked = () => {
+            ctx.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+            window._videoFrames.push(canvas.toDataURL('image/jpeg', 0.6));
+            t++;
+            if (t < maxFrames) videoPreview.currentTime = t;
+          };
+
+          videoPreview.currentTime = 0;
         };
       }
     });
@@ -307,7 +329,8 @@ if (!getCookie(C_KEY)) {
           contentType: mediaType || 'text',
           platforms,
           imageDataUrl,
-          videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null
+          videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null,
+          videoFrames: mediaType === 'video' ? (window._videoFrames || []) : []
         })
       });
       if (!res.ok) {
