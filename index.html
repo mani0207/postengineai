@@ -369,8 +369,6 @@ if (!getCookie(C_KEY)) {
   };
 
   
-  
-  async function generate(){
   // Export video function (FFmpeg backend)
   async function exportFinalVideo() {
     if (!mediaType || mediaType !== 'video') {
@@ -385,10 +383,6 @@ if (!getCookie(C_KEY)) {
     hint.textContent = 'Exporting video… this may take ~30s';
 
     try {
-      // NOTE: for MVP we reuse the local preview blob URL assumption that
-      // your backend already validated using public URLs.
-      // If you later switch to uploads → S3, this stays the same.
-
       const res = await fetch(`${FFMPEG_API}/export`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -409,6 +403,10 @@ if (!getCookie(C_KEY)) {
       hint.textContent = 'Export failed: ' + e.message;
     }
   }
+  // expose for safety
+  window.exportFinalVideo = exportFinalVideo;
+
+  async function generate(){
     // HARD BLOCK empty submit BEFORE building request
     if (!topic.value.trim() && !mediaType) {
       hint.textContent = 'Please enter a topic or upload an image/video.';
