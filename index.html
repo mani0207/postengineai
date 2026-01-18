@@ -309,24 +309,61 @@ if (!getCookie(C_KEY)) {
       const igCaps = Array.isArray(caps.instagram) ? caps.instagram : [];
 
       igCaps.forEach(text => {
-        const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
-        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
+        const card = document.createElement('div');
+        card.className = 'bg-black/30 border border-white/10 rounded-xl p-4';
+        const pre = document.createElement('pre');
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.margin = '0 0 .75rem 0';
+        // --- Patch: handle object vs string for rendering
+        if (typeof text === 'object' && text !== null) {
+          const parts = [];
+          if (text.hook) parts.push(`🔥 ${text.hook}`);
+          if (text.caption) parts.push(text.caption);
+          if (Array.isArray(text.onscreen_text) && text.onscreen_text.length) {
+            parts.push('\nOn-screen text:\n• ' + text.onscreen_text.join('\n• '));
+          }
+          pre.textContent = parts.join('\n\n');
+        } else {
+          pre.textContent = String(text);
+        }
 
         // Render hashtags from backend (if present)
-        const tagWrap=document.createElement('div'); tagWrap.className='mt-2 pt-2 border-t border-white/10';
-        const tagTitle=document.createElement('div'); tagTitle.className='text-sm opacity-80 mb-1'; tagTitle.textContent='Hashtags';
-        const tagLine=document.createElement('div'); tagLine.className='text-sm opacity-90 break-words';
+        const tagWrap = document.createElement('div');
+        tagWrap.className = 'mt-2 pt-2 border-t border-white/10';
+        const tagTitle = document.createElement('div');
+        tagTitle.className = 'text-sm opacity-80 mb-1';
+        tagTitle.textContent = 'Hashtags';
+        const tagLine = document.createElement('div');
+        tagLine.className = 'text-sm opacity-90 break-words';
         tagLine.textContent = (j.hashtags && j.hashtags.length) ? j.hashtags.join(' ') : '';
 
         // Actions
-        const actions=document.createElement('div'); actions.className='mt-3 flex gap-2';
-        const copyCap=document.createElement('button'); copyCap.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyCap.textContent='📋 Copy caption';
-        copyCap.onclick=async()=>{await navigator.clipboard.writeText(text);copyCap.textContent='✅ Copied';setTimeout(()=>copyCap.textContent='📋 Copy caption',1200);};
-        const copyTags=document.createElement('button'); copyTags.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyTags.textContent='🏷️ Copy hashtags';
-        copyTags.onclick=async()=>{await navigator.clipboard.writeText(tagLine.textContent);copyTags.textContent='✅ Copied';setTimeout(()=>copyTags.textContent='🏷️ Copy hashtags',1200);};
+        const actions = document.createElement('div');
+        actions.className = 'mt-3 flex gap-2';
+        const copyCap = document.createElement('button');
+        copyCap.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
+        copyCap.textContent = '📋 Copy caption';
+        copyCap.onclick = async () => {
+          const copyText = (typeof text === 'object' && text !== null)
+            ? [text.hook, text.caption].filter(Boolean).join('\n\n')
+            : String(text);
+          await navigator.clipboard.writeText(copyText);
+          copyCap.textContent = '✅ Copied';
+          setTimeout(() => copyCap.textContent = '📋 Copy caption', 1200);
+        };
+        const copyTags = document.createElement('button');
+        copyTags.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
+        copyTags.textContent = '🏷️ Copy hashtags';
+        copyTags.onclick = async () => {
+          await navigator.clipboard.writeText(tagLine.textContent);
+          copyTags.textContent = '✅ Copied';
+          setTimeout(() => copyTags.textContent = '🏷️ Copy hashtags', 1200);
+        };
 
-        tagWrap.appendChild(tagTitle); tagWrap.appendChild(tagLine);
-        actions.appendChild(copyCap); actions.appendChild(copyTags);
+        tagWrap.appendChild(tagTitle);
+        tagWrap.appendChild(tagLine);
+        actions.appendChild(copyCap);
+        actions.appendChild(copyTags);
 
         card.appendChild(pre);
         card.appendChild(tagWrap);
