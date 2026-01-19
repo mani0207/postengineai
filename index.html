@@ -148,9 +148,9 @@ if (!getCookie(C_KEY)) {
   const mediaInput = document.getElementById('media');
   const imgPreview = document.getElementById('imgPreview');
   const videoPreview = document.getElementById('videoPreview');
-  let mediaType = null;
-  window._videoFrames = [];
-  window._selectedAudio = null;
+let mediaType = null;
+let selectedAudio = null; // SINGLE source of truth for guest audio
+window._videoFrames = [];
 
   if (mediaInput) {
     mediaInput.addEventListener('change', async () => {
@@ -160,7 +160,7 @@ if (!getCookie(C_KEY)) {
         imgPreview.classList.add('hidden');
         videoPreview.classList.add('hidden');
         document.getElementById('audioBox').classList.add('hidden');
-        window._selectedAudio = null;
+        selectedAudio = null;
         return;
       }
 
@@ -171,7 +171,7 @@ if (!getCookie(C_KEY)) {
         imgPreview.classList.remove('hidden');
         videoPreview.classList.add('hidden');
         document.getElementById('audioBox').classList.add('hidden');
-        window._selectedAudio = null;
+        selectedAudio = null;
       }
 
       if (f.type.startsWith('video/')) {
@@ -189,7 +189,7 @@ if (!getCookie(C_KEY)) {
             videoPreview.classList.add('hidden');
             window._videoFrames = [];
             document.getElementById('audioBox').classList.add('hidden');
-            window._selectedAudio = null;
+            selectedAudio = null;
             return;
           }
 
@@ -244,16 +244,15 @@ if (!getCookie(C_KEY)) {
         use.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
         use.textContent = 'Use';
         use.onclick = () => {
-  // clone object to avoid reference issues
-  window._selectedAudio = { ...a };
+          selectedAudio = { preview: a.preview };
 
-  console.log('🎵 Selected audio:', window._selectedAudio);
+          console.log('🎵 Selected audio:', selectedAudio);
 
-  [...list.children].forEach(c => c.classList.remove('ring-2','ring-white'));
-  row.classList.add('ring-2','ring-white');
+          [...list.children].forEach(c => c.classList.remove('ring-2','ring-white'));
+          row.classList.add('ring-2','ring-white');
 
-  hint.textContent = 'Background music selected ✓';
-};
+          hint.textContent = 'Background music selected ✓';
+        };
 
         row.appendChild(audio);
         row.appendChild(use);
@@ -377,12 +376,14 @@ if (!getCookie(C_KEY)) {
   
   // Export video function (FFmpeg backend)
   async function exportFinalVideo() {
-    console.log('Export check → selectedAudio:', window._selectedAudio);
-    if (!mediaType || mediaType !== 'video') {
+    console.log('EXPORT CHECK:', { mediaType, selectedAudio });
+
+    if (mediaType !== 'video') {
       alert('Please upload a video first');
       return;
     }
-    if (!window._selectedAudio || !window._selectedAudio.preview) {
+
+    if (!selectedAudio || !selectedAudio.preview) {
       alert('Please select background music');
       return;
     }
@@ -395,7 +396,7 @@ if (!getCookie(C_KEY)) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           videoUrl: videoPreview.src,
-          audioUrl: window._selectedAudio.preview
+          audioUrl: selectedAudio.preview
         })
       });
 
@@ -440,7 +441,7 @@ if (!getCookie(C_KEY)) {
           imageDataUrl,
           videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null,
           videoFrames: mediaType === 'video' ? (window._videoFrames || []) : [],
-          selectedAudio: window._selectedAudio
+          selectedAudio: selectedAudio
         })
       });
       if (!res.ok) {
