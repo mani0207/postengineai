@@ -232,7 +232,11 @@ window._videoFrames = [];
       const items = await r.json();
       list.innerHTML = '';
 
-      items.forEach(a => {
+      // --- PATCH: auto-select first audio ---
+      let firstAudio = null;
+
+      items.forEach((a, idx) => {
+        if (idx === 0) firstAudio = a;
         const row = document.createElement('div');
         row.className = 'flex items-center gap-2 bg-black/30 border border-white/10 rounded-lg p-2';
 
@@ -258,6 +262,12 @@ window._videoFrames = [];
         row.appendChild(use);
         list.appendChild(row);
       });
+      // Auto-select first audio to avoid empty selection state
+      if (!selectedAudio && firstAudio && firstAudio.preview) {
+        selectedAudio = { preview: firstAudio.preview };
+        console.log('🎵 Auto-selected audio:', selectedAudio);
+        hint.textContent = 'Background music auto-selected ✓';
+      }
     } catch (e) {
       list.innerHTML = 'Failed to load audio';
     }
