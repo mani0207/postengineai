@@ -112,7 +112,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     console.log('index.html DOM ready');
-  const FFMPEG_API = 'http://163.192.104.44:3001';
+    const FFMPEG_API = '/api/export-video';
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -414,7 +414,7 @@ window._videoFrames = [];
     hint.textContent = 'Exporting video… this may take ~30s';
 
     try {
-      const res = await fetch(`${FFMPEG_API}/export`, {
+      const res = await fetch(FFMPEG_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -428,7 +428,8 @@ window._videoFrames = [];
         throw new Error(data.error || 'Export failed');
       }
 
-      window.location.href = `${FFMPEG_API}${data.downloadUrl}`;
+      window.location.href =
+        `/api/download-video?file=${encodeURIComponent(data.output)}`;
       hint.textContent = '';
     } catch (e) {
       hint.textContent = 'Export failed: ' + e.message;
