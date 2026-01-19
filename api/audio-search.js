@@ -11,10 +11,10 @@ export const config = {
       const body = req.body || {};
       const rawMood = (body.mood || 'calm').toString().slice(0, 40).toLowerCase();
       const moodMap = {
-        calm: 'ambient relaxing soft pad',
-        energetic: 'upbeat energetic fast music',
-        cinematic: 'cinematic trailer epic score',
-        vlog: 'vlog background chill music'
+        calm: 'ambient',
+        energetic: 'energetic',
+        cinematic: 'cinematic',
+        vlog: 'vlog'
       };
       const q = moodMap[rawMood] || rawMood;
   
@@ -26,9 +26,8 @@ export const config = {
       const url =
         `https://freesound.org/apiv2/search/text/?` +
         `query=${encodeURIComponent(q)}` +
-        `&filter=duration:[5 TO 60]` +
         `&fields=id,name,previews,license,username,url` +
-        `&page_size=10`;
+        `&page_size=15`;
   
       const r = await fetch(url, {
         headers: {
@@ -49,20 +48,15 @@ export const config = {
   
       const j = await r.json();
   
-      // Allow common Creative Commons / Attribution licenses (Freesound uses varied strings)
-      const isAllowedLicense = (lic = '') =>
-        lic.toLowerCase().includes('creative commons') ||
-        lic.toLowerCase().includes('attribution');
-  
       const items = (j.results || [])
-        .filter(a => isAllowedLicense(a.license))
+        .filter(a => a.previews && (a.previews['preview-hq-mp3'] || a.previews['preview-lq-mp3']))
         .map(a => ({
           id: a.id,
           title: a.name,
           preview: a.previews['preview-hq-mp3'] || a.previews['preview-lq-mp3'],
           license: a.license,
           attribution:
-            a.license.toLowerCase().includes('attribution')
+            a.license && a.license.toLowerCase().includes('attribution')
               ? `Audio by ${a.username} on Freesound.org`
               : null,
           source: a.url,
