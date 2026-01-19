@@ -229,7 +229,11 @@ window._videoFrames = [];
         const t = await r.text();
         throw new Error('Audio API error ' + r.status + ': ' + t);
       }
-      const items = await r.json();
+      // --- PATCH: Normalize response to always be an array ---
+      const data = await r.json();
+      const items = Array.isArray(data) ? data : (data.results || []);
+      // Defensive log
+      console.log('🎧 Audio items loaded:', items);
       list.innerHTML = '';
 
       // --- PATCH: auto-select first audio ---
