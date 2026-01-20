@@ -440,8 +440,12 @@ window._videoFrames = [];
         throw new Error(data.error || 'Export failed');
       }
 
-      window.location.href =
-        `/api/download-video?file=${encodeURIComponent(data.output)}`;
+      if (data.downloadUrl) {
+        window.location.href = data.downloadUrl;
+      } else {
+        const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
+        window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
+      }
       hint.textContent = '';
     } catch (e) {
       hint.textContent = 'Export failed: ' + e.message;
