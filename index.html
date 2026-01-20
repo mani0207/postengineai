@@ -112,7 +112,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     console.log('index.html DOM ready');
-    const FFMPEG_API = '/api/export-video';
+    const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export';
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -420,25 +420,22 @@ window._videoFrames = [];
         return;
       }
 
-      const buffer = await file.arrayBuffer();
-      let binary = '';
-      const bytes = new Uint8Array(buffer);
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      const base64Video = btoa(binary);
+      const fd = new FormData();
+      fd.append('video', file);
+      fd.append('audioUrl', selectedAudio.preview);
 
       const res = await fetch(FFMPEG_API, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          videoBase64: base64Video,
-          filename: file.name || 'input.mp4',
-          audioUrl: selectedAudio.preview
-        })
+        body: fd
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text.slice(0, 200));
+      }
       if (!data.success) {
         throw new Error(data.error || 'Export failed');
       }
