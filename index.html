@@ -414,11 +414,26 @@ window._videoFrames = [];
     hint.textContent = 'Exporting video… this may take ~30s';
 
     try {
+      const file = mediaInput.files[0];
+      if (!file) {
+        alert('Video file missing');
+        return;
+      }
+
+      const buffer = await file.arrayBuffer();
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64Video = btoa(binary);
+
       const res = await fetch(FFMPEG_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          videoUrl: videoPreview.src,
+          videoBase64: base64Video,
+          filename: file.name || 'input.mp4',
           audioUrl: selectedAudio.preview
         })
       });

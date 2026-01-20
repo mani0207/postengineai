@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     try {
       console.log('[export-video] incoming body:', req.body);
   
-      const r = await fetch('http://10.0.0.140:3001/export', {
+      const r = await fetch('https://periproctic-maricela-nonpatently.ngrok-free.dev/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(req.body),
