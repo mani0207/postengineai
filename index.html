@@ -118,6 +118,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     console.log('index.html DOM ready');
     const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export';
+    const FFMPEG_IMAGE_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export-image';
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -175,7 +176,7 @@ window._videoFrames = [];
         imgPreview.src = url;
         imgPreview.classList.remove('hidden');
         videoPreview.classList.add('hidden');
-        document.getElementById('audioBox').classList.add('hidden');
+        document.getElementById('audioBox').classList.remove('hidden');
         selectedAudio = null;
       }
 
@@ -406,6 +407,44 @@ window._videoFrames = [];
       }
     }
 
+    if (mediaType === 'image') {
+      if (!selectedAudio || !selectedAudio.preview) {
+        alert('Please select background music');
+        return;
+      }
+
+      hint.textContent = 'Creating video from image… this may take ~20s';
+
+      const file = mediaInput.files[0];
+      if (!file) {
+        alert('Image file missing');
+        return;
+      }
+
+      const imageDataUrl = await fileToDataUrl(file);
+
+      const res = await fetch(FFMPEG_IMAGE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: imageDataUrl,
+          audioUrl: selectedAudio.preview,
+          duration: 7
+        })
+      });
+
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); }
+      catch { throw new Error(text.slice(0,200)); }
+
+      if (!data.success) throw new Error(data.error || 'Image export failed');
+
+      window.location.href = data.downloadUrl;
+      hint.textContent = '';
+      return;
+    }
+
     if (mediaType !== 'video') {
       alert('Please upload a video first');
       return;
@@ -496,6 +535,14 @@ window._videoFrames = [];
         return;
       }
       const j = await res.json();
+      if (j.suggestedMood) {
+        // Show audio box for both video and image
+        const audioBox = document.getElementById('audioBox');
+        audioBox.classList.remove('hidden');
+
+        loadAudio(j.suggestedMood);
+        hint.textContent = `Suggested background music: ${j.suggestedMood}`;
+      }
       const caps = j.captions || {};
       // Normalize Instagram captions to always be an array
       let igCaps = [];

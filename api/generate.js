@@ -41,7 +41,10 @@ function makeSystemPrompt() {
     "Always return captions as plain strings in a JSON array.",
     "For video inputs, you will receive representative video frames.",
     "Base captions ONLY on what is visible in the frames and the video duration.",
-    "Do NOT invent actions, objects, or scenes not visible."
+    "Do NOT invent actions, objects, or scenes not visible.",
+    "- Additionally, infer the most suitable background music mood for the content.",
+    "- Choose ONLY ONE word from: calm, energetic, cinematic, vlog.",
+    "- Return the mood as a JSON field named \"suggestedMood\"."
   ].join("\\n");
 }
 
@@ -171,6 +174,15 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     let text = completion.choices?.[0]?.message?.content || '[]';
 
+    let suggestedMood = null;
+    try {
+      const parsedMood = JSON.parse(text);
+      if (parsedMood && typeof parsedMood.suggestedMood === 'string') {
+        suggestedMood = parsedMood.suggestedMood.toLowerCase();
+      }
+    } catch {}
+
+
 // Generate hashtags via OpenAI (min 6)
 const hashPrompt = [
   'You generate effective, non-spammy hashtags for Instagram/TikTok.',
@@ -234,6 +246,7 @@ if (hashtags.length < 6) {
         facebook: captions.slice(0, 3)
       },
       hashtags,
+      suggestedMood,
       remaining: user.is_pro ? null : newRemaining,
       isPro: !!user.is_pro,
       location: locationStr || null
