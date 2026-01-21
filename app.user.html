@@ -148,13 +148,16 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
 let mediaType = null; // 'image' | 'video'
 window._selectedAudio = null;
 
-  // ---- Credits UI ----
-  const creditsEl=document.getElementById('credits');
-  function setCreditsLabel(j){
-    // generate.js returns {remaining: number|null, isPro: boolean}
-    if (j && j.isPro) { creditsEl.textContent = '∞'; return; }
-    if (j && typeof j.remaining === 'number') { creditsEl.textContent = String(Math.max(0,j.remaining)); return; }
-    creditsEl.textContent = '—';
+  // ---- Credits UI (same as index.html) ----
+  const creditsEl = document.getElementById('credits');
+
+  function getCredits() {
+    return parseInt(localStorage.getItem('pe_guest_credits') || '2', 10);
+  }
+
+  function setCredits(n) {
+    localStorage.setItem('pe_guest_credits', String(Math.max(0, n)));
+    if (creditsEl) creditsEl.textContent = getCredits();
   }
 
   // ---- Image helpers (kept 1:1 with index.html) ----
@@ -208,13 +211,27 @@ window._selectedAudio = null;
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ prompt: topic.value, imageDataUrl })
       });
-      if (res.status === 402) { window.location.href='/pay.html'; return; }
+      if (res.status === 402) {
+        hint.textContent = 'Free limit reached. Please upgrade to Pro.';
+        return;
+      }
       if (!res.ok) {
         const text = await res.text().catch(()=> '');
         hint.textContent = 'Server error ('+res.status+'): '+(text||'');
         return;
       }
       const j = await res.json();
+
+      // 🔊 Auto-suggest background music (same as index.html)
+      if (j.suggestedMood) {
+        loadAudio(j.suggestedMood);
+        hint.textContent = `Suggested music: ${j.suggestedMood}`;
+      }
+
+      // Update credits after successful generation
+      if (typeof j.remaining === 'number') {
+        setCredits(j.remaining);
+      }
 
       // Render cards (captions + hashtags + actions), same as index.html
       (j.captions||[]).forEach(text=>{
@@ -241,7 +258,6 @@ window._selectedAudio = null;
         out.appendChild(card);
       });
 
-      setCreditsLabel(j);
       hint.textContent='';
     }catch(e){ hint.textContent='Network error: '+ e.message; }
   }
@@ -280,24 +296,56 @@ async function loadAudio(mood){
 window.loadAudio = loadAudio;
 
 const FFMPEG_API = 'http://163.192.104.44:3001';
+const FFMPEG_IMAGE_API = `${FFMPEG_API}/export-image`;
 
 async function exportFinalVideo(){
   console.log('Export check → selectedAudio:', window._selectedAudio);
 
-  if (mediaType !== 'video'){
-    alert('Please upload a video first');
-    return;
-  }
   if (!window._selectedAudio || !window._selectedAudio.preview){
     alert('Please select background music');
     return;
   }
 
-  hint.textContent='Exporting video… this may take ~30s';
+  hint.textContent = 'Exporting… this may take ~30s';
 
-  try{
-    const res = await fetch(`${FFMPEG_API}/export`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
+  try {
+    // 🖼️ IMAGE → VIDEO
+    if (mediaType === 'image') {
+      const file = document.getElementById('img').files?.[0];
+      if (!file) {
+        alert('Image missing');
+        return;
+      }
+
+      const imageDataUrl = await fileToDataUrl(file);
+
+      const res = await fetch(FFMPEG_IMAGE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: imageDataUrl,
+          audioUrl: window._selectedAudio.preview,
+          duration: 7
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Image export failed');
+
+      window.location.href = data.downloadUrl;
+      hint.textContent = '';
+      return;
+    }
+
+    // 🎥 VIDEO
+    if (mediaType !== 'video') {
+      alert('Please upload an image or video first');
+      return;
+    }
+
+    const res = await fetch(`${FFMPEG_API}/export`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         videoUrl: videoPreview.src,
         audioUrl: window._selectedAudio.preview
@@ -305,17 +353,24 @@ async function exportFinalVideo(){
     });
 
     const data = await res.json();
-    if (!data.success) throw new Error(data.error||'Export failed');
+    if (!data.success) throw new Error(data.error || 'Export failed');
 
     window.location.href = `${FFMPEG_API}${data.downloadUrl}`;
     hint.textContent='';
-  }catch(e){ hint.textContent='Export failed: '+e.message; }
+  } catch(e){
+    hint.textContent = 'Export failed: ' + e.message;
+  }
 }
 
 window.exportFinalVideo = exportFinalVideo;
 
 const exportBtn=document.getElementById('exportBtn');
 if (exportBtn) exportBtn.addEventListener('click', exportFinalVideo);
+
+  // ---- Initialize credits on page load ----
+  if (creditsEl) {
+    creditsEl.textContent = getCredits();
+  }
 
   // ---- Sign out: clear cookie and go back to guest landing ----
     (function(){
