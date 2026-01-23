@@ -156,6 +156,8 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
 let mediaType = null; // 'image' | 'video'
 window._selectedAudio = null;
 
+const DEFAULT_MOOD = 'cinematic background';
+
   // ---- Credits UI (same as index.html) ----
   const creditsEl = document.getElementById('credits');
 
@@ -187,6 +189,9 @@ window._selectedAudio = null;
       if (!file) return;
 
       window._selectedAudio = null;
+      // 🎵 Auto-load music suggestions on media upload (match index.html)
+      loadAudio(DEFAULT_MOOD);
+      hint.textContent = `Suggested music: ${DEFAULT_MOOD}`;
 
       if (file.type.startsWith('image/')) {
         mediaType = 'image';
