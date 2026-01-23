@@ -269,28 +269,37 @@ const DEFAULT_MOOD = 'cinematic background';
         creditsEl.textContent = j.credits_left;
       }
 
-      // ---- Normalize captions (robust, handles nested responses) ----
-      let captions = [];
+      // ---- Universal caption extractor (no key assumptions) ----
+      function extractCaptions(obj, acc = []) {
+        if (!obj) return acc;
 
-      const pickArray = (v) => Array.isArray(v) ? v : [];
+        if (Array.isArray(obj)) {
+          // array of strings → captions
+          if (obj.every(v => typeof v === 'string')) {
+            acc.push(...obj);
+          } else {
+            obj.forEach(v => extractCaptions(v, acc));
+          }
+        } else if (typeof obj === 'object') {
+          for (const k in obj) {
+            extractCaptions(obj[k], acc);
+          }
+        } else if (typeof obj === 'string') {
+          // single caption fallback (avoid tiny noise strings)
+          if (obj.length > 20) acc.push(obj);
+        }
+        return acc;
+      }
 
-      // direct forms
-      if (Array.isArray(j.captions)) captions = j.captions;
-      else if (typeof j.captions === 'string') captions = [j.captions];
+      let captions = extractCaptions(j)
+        .map(s => s.trim())
+        .filter(s => s.length > 20);
 
-      // nested common forms
-      else if (j.data && Array.isArray(j.data.captions)) captions = j.data.captions;
-      else if (j.results && Array.isArray(j.results.captions)) captions = j.results.captions;
-
-      // fallback single caption keys
-      else if (typeof j.caption === 'string') captions = [j.caption];
-      else if (j.data && typeof j.data.caption === 'string') captions = [j.data.caption];
-
-      // final fallback: array-like under results
-      else if (Array.isArray(j.results)) captions = j.results;
+      // de‑dupe
+      captions = [...new Set(captions)];
 
       if (!captions.length) {
-        console.warn('Caption payload:', j);
+        console.warn('Caption payload (no extractable captions):', j);
         hint.textContent = 'No captions returned.';
         return;
       }
