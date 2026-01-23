@@ -380,7 +380,7 @@ window.loadAudio = loadAudio;
     });
   });
 
-const FFMPEG_API = 'http://163.192.104.44:3001';
+const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
 const FFMPEG_IMAGE_API = `${FFMPEG_API}/export-image`;
 
 async function exportFinalVideo(){
@@ -428,19 +428,25 @@ async function exportFinalVideo(){
       return;
     }
 
+    const file = document.getElementById('media')?.files?.[0];
+    if (!file) {
+      alert('Video file missing');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('video', file);
+    fd.append('audioUrl', window._selectedAudio.preview);
+
     const res = await fetch(`${FFMPEG_API}/export`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        videoUrl: videoPreview.src,
-        audioUrl: window._selectedAudio.preview
-      })
+      method: 'POST',
+      body: fd
     });
 
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Export failed');
 
-    window.location.href = `${FFMPEG_API}${data.downloadUrl}`;
+    window.location.href = data.downloadUrl;
     hint.textContent='';
   } catch(e){
     hint.textContent = 'Export failed: ' + e.message;
