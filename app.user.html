@@ -100,11 +100,32 @@
         </div>
    
 
-        <div class="mt-4 flex items-center gap-2">
+        <div class="mt-4 flex flex-wrap items-center gap-2">
           <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
           <button id="exportBtn" class="rounded-xl border border-white/20 px-4 py-2 font-medium hover:bg-white/10">Export video</button>
           <span id="hint" class="opacity-80 text-sm"></span>
         </div>
+
+        <!-- 🎵 Background music selector (same as index.html) -->
+        <div class="mt-6">
+          <div class="flex items-center gap-2 text-sm opacity-90 mb-2">
+            <span>🎵</span>
+            <span>Background music (royalty-free)</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button class="chip music-chip" data-mood="calm">Calm</button>
+            <button class="chip music-chip" data-mood="energetic">Energetic</button>
+            <button class="chip music-chip" data-mood="cinematic">Cinematic</button>
+            <button class="chip music-chip" data-mood="vlog">Vlog</button>
+          </div>
+
+          <p class="mt-2 text-sm opacity-70">
+            Background music is optional. You can export without audio or replace it later.
+            Advanced audio editing is available in Pro.
+          </p>
+        </div>
+
         <div id="audioList" class="mt-4 grid gap-2"></div>
         <div id="out" class="mt-6 grid gap-4"></div>
       </div>
@@ -319,6 +340,15 @@ async function loadAudio(mood){
 }
 
 window.loadAudio = loadAudio;
+
+  // ---- Music mood chips (same as index.html) ----
+  document.querySelectorAll('.music-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const mood = btn.dataset.mood;
+      loadAudio(mood);
+      hint.textContent = `Suggested music: ${mood}`;
+    });
+  });
 
 const FFMPEG_API = 'http://163.192.104.44:3001';
 const FFMPEG_IMAGE_API = `${FFMPEG_API}/export-image`;
