@@ -157,6 +157,7 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
     const { data: { session } } = await sb.auth.getSession();
     if (session && session.user) {
       document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180);
+      loadUserCredits();
     } else {
       // No session: show inline auth form instead of redirecting
       document.getElementById('inlineAuth').classList.remove('hidden');
@@ -176,20 +177,25 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
 // ---- Shared media state (must match index.html) ----
 let mediaType = null; // 'image' | 'video'
 window._selectedAudio = null;
+/* ---- Logged-in user credits (DB source of truth) ---- */
+const creditsEl = document.getElementById('credits');
+let userCredits = null;
 
+async function loadUserCredits() {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (typeof data.credits === 'number') {
+      userCredits = data.credits;
+      creditsEl.textContent = userCredits;
+    }
+  } catch (e) {
+    console.error('Failed to load user credits', e);
+  }
+}
 const DEFAULT_MOOD = 'cinematic background';
 
-  // ---- Credits UI (same as index.html) ----
-  const creditsEl = document.getElementById('credits');
-
-  function getCredits() {
-    return parseInt(localStorage.getItem('pe_guest_credits') || '2', 10);
-  }
-
-  function setCredits(n) {
-    localStorage.setItem('pe_guest_credits', String(Math.max(0, n)));
-    if (creditsEl) creditsEl.textContent = getCredits();
-  }
 
   // ---- Image helpers (kept 1:1 with index.html) ----
   function fileToDataUrl(file){
@@ -243,7 +249,10 @@ const DEFAULT_MOOD = 'cinematic background';
   const go=document.getElementById('go');
   const hint=document.getElementById('hint');
   const out=document.getElementById('out');
-
+  if (userCredits !== null && userCredits <= 0) {
+  hint.textContent = 'You’ve used all your credits. Please upgrade.';
+  return;
+}
   async function generate(){
     out.innerHTML=''; hint.textContent='Generating…';
 
@@ -273,11 +282,10 @@ const DEFAULT_MOOD = 'cinematic background';
       const mood = j.suggestedMood || 'cinematic background';
       loadAudio(mood);
       hint.textContent = `Suggested music: ${mood}`;
-
-      // Update credits after successful generation
-      if (typeof j.remaining === 'number') {
-        setCredits(j.remaining);
-      }
+      if (typeof j.credits_left === 'number') {
+  userCredits = j.credits_left;
+  creditsEl.textContent = userCredits;
+}
 
       // Render cards (captions + hashtags + actions), same as index.html
       (j.captions||[]).forEach(text=>{
@@ -494,10 +502,7 @@ window.exportFinalVideo = exportFinalVideo;
 const exportBtn=document.getElementById('exportBtn');
 if (exportBtn) exportBtn.addEventListener('click', exportFinalVideo);
 
-  // ---- Initialize credits on page load ----
-  if (creditsEl) {
-    creditsEl.textContent = getCredits();
-  }
+
 
   // ---- Sign out: clear cookie and go back to guest landing ----
     (function(){
