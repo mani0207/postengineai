@@ -222,11 +222,10 @@ window._selectedAudio = null;
       }
       const j = await res.json();
 
-      // 🔊 Auto-suggest background music (same as index.html)
-      if (j.suggestedMood) {
-        loadAudio(j.suggestedMood);
-        hint.textContent = `Suggested music: ${j.suggestedMood}`;
-      }
+      // 🔊 Auto-suggest background music (same behavior as index.html)
+      const mood = j.suggestedMood || 'cinematic background';
+      loadAudio(mood);
+      hint.textContent = `Suggested music: ${mood}`;
 
       // Update credits after successful generation
       if (typeof j.remaining === 'number') {
