@@ -174,22 +174,27 @@ const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
 })();
 
 // ---- Shared media state (must match index.html) ----
+/* ---- Logged-in user credits (APP ONLY) ---- */
+const creditsEl = document.getElementById('credits');
+let userCredits = null;
+
+async function loadUserCredits() {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (typeof data.credits === 'number') {
+      userCredits = data.credits;
+      creditsEl.textContent = userCredits;
+    }
+  } catch {}
+}
 let mediaType = null; // 'image' | 'video'
 window._selectedAudio = null;
 
 const DEFAULT_MOOD = 'cinematic background';
 
-  // ---- Credits UI (same as index.html) ----
-  const creditsEl = document.getElementById('credits');
 
-  function getCredits() {
-    return parseInt(localStorage.getItem('pe_guest_credits') || '2', 10);
-  }
-
-  function setCredits(n) {
-    localStorage.setItem('pe_guest_credits', String(Math.max(0, n)));
-    if (creditsEl) creditsEl.textContent = getCredits();
-  }
 
   // ---- Image helpers (kept 1:1 with index.html) ----
   function fileToDataUrl(file){
@@ -494,10 +499,7 @@ window.exportFinalVideo = exportFinalVideo;
 const exportBtn=document.getElementById('exportBtn');
 if (exportBtn) exportBtn.addEventListener('click', exportFinalVideo);
 
-  // ---- Initialize credits on page load ----
-  if (creditsEl) {
-    creditsEl.textContent = getCredits();
-  }
+
 
   // ---- Sign out: clear cookie and go back to guest landing ----
     (function(){
