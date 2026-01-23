@@ -90,6 +90,17 @@
           </div>
           <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
         </div>
+        <!-- Optional video upload + preview (same as index.html) -->
+        <div class="mt-4 grid gap-3">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label for="video" class="text-sm opacity-90">Optional video</label>
+            <input id="video" type="file" accept="video/*"
+              class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
+          </div>
+          <video id="videoPreview"
+            class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
+            controls></video>
+        </div>
    
 
         <div class="mt-4 flex items-center gap-2">
@@ -173,6 +184,11 @@ window._selectedAudio = null;
   const imgPreview = document.getElementById('imgPreview');
   if (imgInput && imgPreview){
     imgInput.addEventListener('change', async ()=>{
+      // reset video when image selected
+      if (videoPreview){
+        videoPreview.classList.add('hidden');
+        videoPreview.src = '';
+      }
       const f = imgInput.files && imgInput.files[0];
       if(!f){ 
         imgPreview.classList.add('hidden'); 
@@ -188,6 +204,33 @@ window._selectedAudio = null;
         imgPreview.classList.remove('hidden'); 
       }
       catch{ imgPreview.classList.add('hidden'); }
+    });
+  }
+
+  // ---- Video helpers (same as index.html) ----
+  const videoInput = document.getElementById('video');
+  const videoPreview = document.getElementById('videoPreview');
+
+  if (videoInput && videoPreview){
+    videoInput.addEventListener('change', ()=>{
+      const f = videoInput.files && videoInput.files[0];
+      if (!f){
+        videoPreview.classList.add('hidden');
+        videoPreview.src = '';
+        return;
+      }
+
+      mediaType = 'video';
+      window._selectedAudio = null;
+
+      // reset image
+      if (imgPreview){
+        imgPreview.classList.add('hidden');
+        imgPreview.src = '';
+      }
+
+      videoPreview.src = URL.createObjectURL(f);
+      videoPreview.classList.remove('hidden');
     });
   }
 
