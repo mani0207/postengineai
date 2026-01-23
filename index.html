@@ -116,6 +116,8 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // 🔒 Force guest mode on index.html (never allow logged-in state here)
+    document.cookie = 'pe_auth=; Max-Age=0; Path=/';
     console.log('index.html DOM ready');
     const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export';
     const FFMPEG_IMAGE_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export-image';
@@ -132,8 +134,18 @@ if (!getCookie(C_KEY)) {
 }
 
   const creditsEl = document.getElementById('credits');
-  function getCredits(){ return parseInt(localStorage.getItem('pe_guest_credits')||'2',10); }
-  function setCredits(n){ localStorage.setItem('pe_guest_credits', String(Math.max(0,n))); creditsEl.textContent = getCredits(); }
+
+  function getCredits(){
+    const v = parseInt(localStorage.getItem('pe_guest_credits') || '2', 10);
+    return Math.max(0, Math.min(2, v)); // hard cap at 2
+  }
+
+  function setCredits(n){
+    const v = Math.max(0, Math.min(2, n)); // hard cap at 2
+    localStorage.setItem('pe_guest_credits', String(v));
+    creditsEl.textContent = v;
+  }
+
   setCredits(getCredits());
 
   const topic = document.getElementById('topic');
