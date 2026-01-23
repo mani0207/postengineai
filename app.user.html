@@ -82,21 +82,18 @@
         <label class="block text-sm opacity-90">Describe your niche or post idea</label>
         <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none" placeholder="e.g., new smoothie reel, barbershop promo, travel tips" />
 
-        <!-- Optional image upload + preview (kept consistent with index.html) -->
+        <!-- Optional image or video (≤30s) -->
         <div class="mt-4 grid gap-3">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label for="img" class="text-sm opacity-90">Optional image</label>
-            <input id="img" type="file" accept="image/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
-          </div>
-          <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
-        </div>
-        <!-- Optional video upload + preview (same as index.html) -->
-        <div class="mt-4 grid gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label for="video" class="text-sm opacity-90">Optional video</label>
-            <input id="video" type="file" accept="video/*"
+            <label for="media" class="text-sm opacity-90">Optional image or video (≤30s)</label>
+            <input id="media" type="file" accept="image/*,video/*"
               class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
           </div>
+
+          <img id="imgPreview"
+            class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
+            alt="Selected image preview" />
+
           <video id="videoPreview"
             class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
             controls></video>
@@ -180,57 +177,38 @@ window._selectedAudio = null;
       r.readAsDataURL(file);
     });
   }
-  const imgInput = document.getElementById('img');
+  const mediaInput = document.getElementById('media');
   const imgPreview = document.getElementById('imgPreview');
-  if (imgInput && imgPreview){
-    imgInput.addEventListener('change', async ()=>{
-      // reset video when image selected
-      if (videoPreview){
-        videoPreview.classList.add('hidden');
-        videoPreview.src = '';
-      }
-      const f = imgInput.files && imgInput.files[0];
-      if(!f){ 
-        imgPreview.classList.add('hidden'); 
-        imgPreview.src=''; 
-        return; 
-      }
-      mediaType = 'image';
-      window._selectedAudio = null; // reset audio when switching media
-
-      try{ 
-        const url = await fileToDataUrl(f); 
-        imgPreview.src = url; 
-        imgPreview.classList.remove('hidden'); 
-      }
-      catch{ imgPreview.classList.add('hidden'); }
-    });
-  }
-
-  // ---- Video helpers (same as index.html) ----
-  const videoInput = document.getElementById('video');
   const videoPreview = document.getElementById('videoPreview');
 
-  if (videoInput && videoPreview){
-    videoInput.addEventListener('change', ()=>{
-      const f = videoInput.files && videoInput.files[0];
-      if (!f){
-        videoPreview.classList.add('hidden');
-        videoPreview.src = '';
-        return;
-      }
+  if (mediaInput) {
+    mediaInput.addEventListener('change', async () => {
+      const file = mediaInput.files?.[0];
+      if (!file) return;
 
-      mediaType = 'video';
       window._selectedAudio = null;
 
-      // reset image
-      if (imgPreview){
+      if (file.type.startsWith('image/')) {
+        mediaType = 'image';
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          imgPreview.src = reader.result;
+          imgPreview.classList.remove('hidden');
+          videoPreview.classList.add('hidden');
+          videoPreview.src = '';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      else if (file.type.startsWith('video/')) {
+        mediaType = 'video';
+
+        videoPreview.src = URL.createObjectURL(file);
+        videoPreview.classList.remove('hidden');
         imgPreview.classList.add('hidden');
         imgPreview.src = '';
       }
-
-      videoPreview.src = URL.createObjectURL(f);
-      videoPreview.classList.remove('hidden');
     });
   }
 
@@ -244,10 +222,10 @@ window._selectedAudio = null;
     out.innerHTML=''; hint.textContent='Generating…';
 
     let imageDataUrl = '';
-    try{
-      const f = (document.getElementById('img')||{}).files?.[0];
+    if (mediaType === 'image') {
+      const f = document.getElementById('media')?.files?.[0];
       if (f) imageDataUrl = await fileToDataUrl(f);
-    }catch{}
+    }
 
     try{
       const res = await fetch('/api/generate', {
@@ -353,7 +331,7 @@ async function exportFinalVideo(){
   try {
     // 🖼️ IMAGE → VIDEO
     if (mediaType === 'image') {
-      const file = document.getElementById('img').files?.[0];
+      const file = document.getElementById('media')?.files?.[0];
       if (!file) {
         alert('Image missing');
         return;
