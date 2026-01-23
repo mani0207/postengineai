@@ -269,20 +269,28 @@ const DEFAULT_MOOD = 'cinematic background';
         creditsEl.textContent = j.credits_left;
       }
 
-      // ---- Normalize captions (match index.html) ----
+      // ---- Normalize captions (robust, handles nested responses) ----
       let captions = [];
 
-      if (Array.isArray(j.captions)) {
-        captions = j.captions;
-      } else if (typeof j.captions === 'string') {
-        captions = [j.captions];
-      } else if (Array.isArray(j.results)) {
-        captions = j.results;
-      } else if (j.caption) {
-        captions = [j.caption];
-      }
+      const pickArray = (v) => Array.isArray(v) ? v : [];
+
+      // direct forms
+      if (Array.isArray(j.captions)) captions = j.captions;
+      else if (typeof j.captions === 'string') captions = [j.captions];
+
+      // nested common forms
+      else if (j.data && Array.isArray(j.data.captions)) captions = j.data.captions;
+      else if (j.results && Array.isArray(j.results.captions)) captions = j.results.captions;
+
+      // fallback single caption keys
+      else if (typeof j.caption === 'string') captions = [j.caption];
+      else if (j.data && typeof j.data.caption === 'string') captions = [j.data.caption];
+
+      // final fallback: array-like under results
+      else if (Array.isArray(j.results)) captions = j.results;
 
       if (!captions.length) {
+        console.warn('Caption payload:', j);
         hint.textContent = 'No captions returned.';
         return;
       }
