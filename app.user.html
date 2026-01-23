@@ -414,12 +414,29 @@ async function exportFinalVideo(){
         })
       });
 
-      const data = await res.json();
+      // --- Begin: updated IMAGE export response handling (parity with index.html) ---
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text.slice(0,200));
+      }
+
       if (!data.success) throw new Error(data.error || 'Image export failed');
 
-      window.location.href = data.downloadUrl;
+      if (data.downloadUrl) {
+        window.location.href = data.downloadUrl;
+      } else if (data.output) {
+        const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
+        window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
+      } else {
+        throw new Error('No download URL returned');
+      }
+
       hint.textContent = '';
       return;
+      // --- End: updated IMAGE export response handling ---
     }
 
     // 🎥 VIDEO
@@ -443,11 +460,30 @@ async function exportFinalVideo(){
       body: fd
     });
 
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Export failed');
+    // --- Begin: updated VIDEO export response handling (parity with index.html) ---
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(text.slice(0,200));
+    }
 
-    window.location.href = data.downloadUrl;
-    hint.textContent='';
+    if (!data.success) {
+      throw new Error(data.error || 'Export failed');
+    }
+
+    if (data.downloadUrl) {
+      window.location.href = data.downloadUrl;
+    } else if (data.output) {
+      const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
+      window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
+    } else {
+      throw new Error('No download URL returned');
+    }
+
+    hint.textContent = '';
+    // --- End: updated VIDEO export response handling ---
   } catch(e){
     hint.textContent = 'Export failed: ' + e.message;
   }
