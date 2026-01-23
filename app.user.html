@@ -269,8 +269,25 @@ const DEFAULT_MOOD = 'cinematic background';
         creditsEl.textContent = j.credits_left;
       }
 
-      // Render cards (captions + hashtags + actions), same as index.html
-      (j.captions||[]).forEach(text=>{
+      // ---- Normalize captions (match index.html) ----
+      let captions = [];
+
+      if (Array.isArray(j.captions)) {
+        captions = j.captions;
+      } else if (typeof j.captions === 'string') {
+        captions = [j.captions];
+      } else if (Array.isArray(j.results)) {
+        captions = j.results;
+      } else if (j.caption) {
+        captions = [j.caption];
+      }
+
+      if (!captions.length) {
+        hint.textContent = 'No captions returned.';
+        return;
+      }
+
+      captions.forEach(text=>{
         const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
         const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
 
