@@ -100,12 +100,6 @@
         </div>
    
 
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
-          <button id="exportBtn" class="rounded-xl border border-white/20 px-4 py-2 font-medium hover:bg-white/10">Export video</button>
-          <span id="hint" class="opacity-80 text-sm"></span>
-        </div>
-
         <!-- 🎵 Background music selector (same as index.html) -->
         <div class="mt-6">
           <div class="flex items-center gap-2 text-sm opacity-90 mb-2">
@@ -127,6 +121,12 @@
         </div>
 
         <div id="audioList" class="mt-4 grid gap-2"></div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+          <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
+          <button id="exportBtn" class="rounded-xl border border-white/20 px-4 py-2 font-medium hover:bg-white/10">Export video</button>
+          <span id="hint" class="opacity-80 text-sm"></span>
+        </div>
         <div id="out" class="mt-6 grid gap-4"></div>
       </div>
     </div>
@@ -263,9 +263,10 @@ const DEFAULT_MOOD = 'cinematic background';
       loadAudio(mood);
       hint.textContent = `Suggested music: ${mood}`;
 
-      // Update credits after successful generation
-      if (typeof j.remaining === 'number') {
-        setCredits(j.remaining);
+      // Update credits after successful generation (new logic)
+      if (typeof j.credits_left === 'number') {
+        const creditsEl = document.getElementById('credits');
+        creditsEl.textContent = j.credits_left;
       }
 
       // Render cards (captions + hashtags + actions), same as index.html
