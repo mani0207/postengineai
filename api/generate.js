@@ -167,7 +167,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     }
 
     const completion = await client.messages.create({
-      model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
+      model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5',
       max_tokens: 1024,
       temperature: mediaKind === 'video' ? 0.4 : 0.8,
       system: systemPrompt,
@@ -197,7 +197,7 @@ const hashMessages = [
   { role: 'user', content: JSON.stringify({ topic: prompt, location: locationStr||null }) }
 ];
 const hashComp = await client.messages.create({
-  model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
+  model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5',
   max_tokens: 512,
   temperature: 0.6,
   system: hashMessages[0].content,
