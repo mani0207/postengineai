@@ -3,348 +3,482 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>postEngineAI — Your captions</title>
+  <title>postEngineAI — Caption magic for your content</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--ig:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
-    .ig{background-image:var(--ig)}
-    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-    .chip{display:inline-block;background:#0e141b;color:#fff;border-radius:9999px;padding:.45rem .8rem}
+    :root {
+      --ig: linear-gradient(135deg, #F58529 0%, #DD2A7B 50%, #8134AF 100%);
+      --ig-subtle: linear-gradient(135deg, rgba(245,133,41,.15) 0%, rgba(221,42,123,.15) 50%, rgba(129,52,175,.15) 100%);
+      --accent: #DD2A7B;
+      --bg-deep: #0a0e14;
+    }
+    body { font-family: 'Outfit', system-ui, sans-serif; }
+    .ig { background-image: var(--ig); }
+    .glass { background: rgba(255,255,255,.06); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.08); }
+    .chip { display: inline-block; background: rgba(255,255,255,.08); color: #fff; border-radius: 9999px; padding: .5rem 1rem; transition: all .2s; }
+    .chip:hover, .chip.active { background: rgba(255,255,255,.15); transform: translateY(-1px); }
+    .drop-zone { border: 2px dashed rgba(255,255,255,.2); border-radius: 1rem; transition: all .2s; }
+    .drop-zone.drag-over, .drop-zone:hover { border-color: var(--accent); background: var(--ig-subtle); }
+    .btn-primary { background: linear-gradient(135deg, #F58529, #DD2A7B); }
+    .btn-primary:hover { opacity: .95; transform: translateY(-1px); }
+    .caption-card { transition: transform .2s; }
+    .caption-card:hover { transform: translateY(-2px); }
+    .trim-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .trim-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none; }
+    .platform-chip:has(input:checked) { background: rgba(255,255,255,.15); box-shadow: 0 0 0 1px rgba(221,42,123,.5); }
   </style>
-  <!-- Supabase Auth (needed to read the OAuth session after redirect) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta name="supabase-url" content="https://gstimoeysvzskmrnehfv.supabase.co">
   <meta name="supabase-anon" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzdGltb2V5c3Z6c2ttcm5laGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MjIwODgsImV4cCI6MjA3MzM5ODA4OH0.Pe9RUEHM1xK2qqK7n13M7ErAgZcuAVSGXDq1Yr2aP1o">
+  <meta name="ffmpeg-api" content="https://periproctic-maricela-nonpatently.ngrok-free.dev">
 </head>
-<body class="bg-slate-950 text-white">
-  <header class="border-b border-white/10">
-    <div class="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
+<body class="bg-[var(--bg-deep)] text-white min-h-screen">
+  <header class="border-b border-white/10 sticky top-0 z-40 bg-[var(--bg-deep)]/95 backdrop-blur">
+    <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 group">
         <img src="/header-logo-tight.png" alt="postEngineAI" class="h-8 w-auto">
-        <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent">postEngineAI</span>
+        <span class="font-semibold text-lg bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] bg-clip-text text-transparent group-hover:opacity-90">postEngineAI</span>
       </a>
-      <nav class="text-sm flex items-center gap-3">
-        <a href="#" id="signOutLink" class="opacity-90 hover:opacity-100">Sign out</a>
-        <a href="/pay.html" class="rounded-lg bg-white text-black px-3 py-1.5 font-medium hover:opacity-90">Go Pro ($5/mo)</a>
+      <nav class="text-sm flex items-center gap-4">
+        <a href="#" id="signOutLink" class="opacity-80 hover:opacity-100 transition">Sign out</a>
+        <a href="/pay.html" class="rounded-lg btn-primary px-4 py-2 font-medium text-white shadow-lg shadow-pink-500/20">Go Pro — $5/mo</a>
       </nav>
     </div>
   </header>
 
-  <!-- Password reset / set-password panel -->
-<div id="pwPanel" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-  <div class="w-full max-w-sm rounded-2xl border border-white/10 bg-black/85 text-white backdrop-blur p-6">
-    <h3 class="text-lg font-semibold">Set your password</h3>
-    <p class="mt-1 text-sm text-white/80">Choose a new password to use email sign-in next time.</p>
-    <div class="mt-4 grid gap-3">
-      <input id="pw1" type="password" placeholder="New password" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-      <input id="pw2" type="password" placeholder="Confirm password" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-      <button id="pwSave" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Save password</button>
-      <p id="pwMsg" class="text-sm text-white/80"></p>
-    </div>
-  </div>
-</div>
-
-  <!-- Inline Auth (only shows if no Supabase session) -->
-<section id="inlineAuth" class="hidden ig">
-  <div class="max-w-5xl mx-auto px-4 py-10">
-    <div class="p-6 rounded-2xl border border-white/10 glass max-w-md">
-      <h2 class="text-xl font-semibold">Sign in to continue</h2>
-      <p class="mt-1 text-sm text-white/80">If you just signed up, confirm your email first.</p>
+  <!-- Password reset panel -->
+  <div id="pwPanel" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+    <div class="w-full max-w-sm rounded-2xl border border-white/10 glass p-6">
+      <h3 class="text-lg font-semibold">Set your password</h3>
+      <p class="mt-1 text-sm text-white/70">Choose a new password for email sign-in.</p>
       <div class="mt-4 grid gap-3">
-        <input id="authEmail2" type="email" placeholder="you@example.com" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-        <input id="authPass2" type="password" placeholder="Password" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
-        <button id="authSignin2" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Sign in</button>
-        <div class="text-center text-sm text-white/60">or</div>
-        <button id="authGoogle2" class="rounded-lg bg-[#4285F4] px-3 py-2 font-medium">Continue with Google</button>
-        <p id="authMsg2" class="text-sm text-white/80"></p>
+        <input id="pw1" type="password" placeholder="New password" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+        <input id="pw2" type="password" placeholder="Confirm" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+        <button id="pwSave" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Save</button>
+        <p id="pwMsg" class="text-sm text-white/70"></p>
       </div>
     </div>
   </div>
-</section>
 
-  <section class="ig">
+  <!-- Inline Auth -->
+  <section id="inlineAuth" class="hidden ig">
     <div class="max-w-5xl mx-auto px-4 py-10">
-      <h1 class="text-3xl sm:text-4xl font-bold">Welcome back 👋</h1>
-      <p class="mt-2 text-white/90">
-        You have a <b>20-caption free trial</b>. Upgrade anytime to <b>200/month</b> for just <b>$5/mo</b>.
-      </p>
-      
-      <div class="mt-4">
-        <a href="/pay.html" class="rounded-xl bg-white text-black px-5 py-3 font-semibold text-lg hover:opacity-90 inline-block">
-          🚀 Upgrade to Pro — $5/mo
-        </a>
-      </div>
-      
-      <div class="mt-4 inline-flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-3 py-2">
-        <span>Captions left:</span><span id="credits">—</span>
-      </div>
-      <div class="mt-6 p-6 rounded-2xl border border-white/10 glass">
-        <label class="block text-sm opacity-90">Describe your niche or post idea</label>
-        <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none" placeholder="e.g., new smoothie reel, barbershop promo, travel tips" />
-
-        <!-- Optional image or video (≤30s) -->
+      <div class="p-6 rounded-2xl glass max-w-md">
+        <h2 class="text-xl font-semibold">Sign in to continue</h2>
+        <p class="mt-1 text-sm text-white/80">Confirm your email first if you just signed up.</p>
         <div class="mt-4 grid gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label for="media" class="text-sm opacity-90">Optional image or video (≤30s)</label>
-            <input id="media" type="file" accept="image/*,video/*"
-              class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
-          </div>
-
-          <img id="imgPreview"
-            class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
-            alt="Selected image preview" />
-
-          <video id="videoPreview"
-            class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
-            controls></video>
+          <input id="authEmail2" type="email" placeholder="you@example.com" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+          <input id="authPass2" type="password" placeholder="Password" class="rounded-lg bg-black/40 border border-white/15 px-3 py-2">
+          <button id="authSignin2" class="rounded-lg bg-white text-black px-3 py-2 font-medium">Sign in</button>
+          <div class="text-center text-sm text-white/60">or</div>
+          <button id="authGoogle2" class="rounded-lg bg-[#4285F4] px-3 py-2 font-medium">Continue with Google</button>
+          <p id="authMsg2" class="text-sm text-white/80"></p>
         </div>
-   
+      </div>
+    </div>
+  </section>
 
-        <!-- 🎵 Background music selector (same as index.html) -->
+  <main class="ig min-h-[calc(100vh-3.5rem)]">
+    <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">Your caption studio</h1>
+      <p class="mt-2 text-white/90 text-lg">Upload a photo, video, or describe your idea — we'll craft scroll-stopping captions.</p>
+
+      <div class="mt-6 flex flex-wrap items-center gap-4">
+        <div class="inline-flex items-center gap-2 bg-black/30 border border-white/10 rounded-xl px-4 py-2">
+          <span class="text-white/80">Credits:</span>
+          <span id="credits" class="font-semibold">—</span>
+        </div>
+        <a href="/pay.html" class="text-sm text-white/80 hover:text-white underline">20 free → 200/mo for $5</a>
+      </div>
+
+      <div class="mt-8 p-6 sm:p-8 rounded-2xl glass">
+        <!-- Topic input -->
+        <label class="block text-sm font-medium text-white/90 mb-2">Describe your niche or post idea</label>
+        <input id="topic" class="w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition" placeholder="e.g., morning smoothie reel, barbershop promo, travel tips, product launch" />
+
+        <!-- Media: drag-drop + file input -->
         <div class="mt-6">
-          <div class="flex items-center gap-2 text-sm opacity-90 mb-2">
-            <span>🎵</span>
-            <span>Background music (royalty-free)</span>
+          <label class="block text-sm font-medium text-white/90 mb-2">Photo or video (optional)</label>
+          <div id="dropZone" class="drop-zone p-6 text-center cursor-pointer" onclick="document.getElementById('media').click()">
+            <input id="media" type="file" accept="image/*,video/*" class="hidden">
+            <p class="text-white/70">Drag & drop or <span class="text-pink-400 underline">browse</span></p>
+            <p class="text-sm text-white/50 mt-1">Image or video ≤30s</p>
           </div>
 
+          <div id="mediaPreview" class="mt-4 flex gap-4 items-start">
+            <img id="imgPreview" class="hidden max-h-48 rounded-xl border border-white/10 object-cover" alt="Preview" />
+            <div id="videoContainer" class="hidden flex-1">
+              <video id="videoPreview" class="max-h-48 rounded-xl border border-white/10" controls playsinline></video>
+              <!-- Video trim UI -->
+              <div id="trimPanel" class="hidden mt-4 p-4 rounded-xl bg-black/30 border border-white/10">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-sm font-medium">✂️ Trim video</span>
+                  <span id="trimDuration" class="text-sm text-white/60">0s – 0s</span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div>
+                    <label class="text-xs text-white/60">Start (s)</label>
+                    <input id="trimStart" type="number" min="0" step="0.5" value="0" class="w-full rounded-lg bg-black/40 border border-white/10 px-2 py-1.5 text-sm mt-0.5">
+                  </div>
+                  <div>
+                    <label class="text-xs text-white/60">End (s)</label>
+                    <input id="trimEnd" type="number" min="0" step="0.5" value="0" class="w-full rounded-lg bg-black/40 border border-white/10 px-2 py-1.5 text-sm mt-0.5">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform selector -->
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-white/90 mb-2">Platforms</label>
+          <div class="flex flex-wrap gap-2" id="platformChips">
+            <label class="chip platform-chip cursor-pointer">
+              <input type="checkbox" name="platform" value="instagram" checked class="sr-only">Instagram
+            </label>
+            <label class="chip platform-chip cursor-pointer">
+              <input type="checkbox" name="platform" value="tiktok" class="sr-only">TikTok
+            </label>
+            <label class="chip platform-chip cursor-pointer">
+              <input type="checkbox" name="platform" value="facebook" class="sr-only">Facebook
+            </label>
+          </div>
+        </div>
+
+        <!-- Music -->
+        <div class="mt-6">
+          <div class="flex items-center gap-2 text-sm font-medium text-white/90 mb-2">🎵 Background music</div>
           <div class="flex flex-wrap gap-2">
             <button class="chip music-chip" data-mood="calm">Calm</button>
             <button class="chip music-chip" data-mood="energetic">Energetic</button>
             <button class="chip music-chip" data-mood="cinematic">Cinematic</button>
             <button class="chip music-chip" data-mood="vlog">Vlog</button>
           </div>
-
-          <p class="mt-2 text-sm opacity-70">
-            Background music is optional. You can export without audio or replace it later.
-            Advanced audio editing is available in Pro.
-          </p>
+          <p class="mt-2 text-sm text-white/60">Optional. You can export without music.</p>
+          <div id="audioList" class="mt-4 grid gap-2"></div>
+          <label id="noMusicLabel" class="mt-2 flex items-center gap-2 cursor-pointer text-sm text-white/80 hidden">
+            <input id="exportNoMusic" type="checkbox" class="rounded">
+            <span>Export video without music</span>
+          </label>
         </div>
 
-        <div id="audioList" class="mt-4 grid gap-2"></div>
-
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          <button id="go" class="rounded-xl bg-white text-black px-4 py-2 font-medium hover:opacity-90">Generate</button>
-          <button id="exportBtn" class="rounded-xl border border-white/20 px-4 py-2 font-medium hover:bg-white/10">Export video</button>
-          <span id="hint" class="opacity-80 text-sm"></span>
+        <!-- Actions -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <button id="go" class="rounded-xl btn-primary px-6 py-3 font-semibold text-white shadow-lg shadow-pink-500/20 hover:opacity-95 transition">Generate captions</button>
+          <button id="exportBtn" class="rounded-xl border border-white/20 px-6 py-3 font-medium hover:bg-white/10 transition">Export video</button>
+          <span id="hint" class="text-sm text-white/70"></span>
         </div>
-        <div id="out" class="mt-6 grid gap-4"></div>
+
+        <div id="out" class="mt-8 grid gap-4"></div>
       </div>
     </div>
-  </section>
+  </main>
 
 <script>
-// ---- Auth guard (OAuth-aware) ----
-function getCookie(k){
-  return document.cookie.split(';').map(s=>s.trim()).filter(Boolean)
-    .reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];
+// ---- Config ----
+const FFMPEG_API = (document.querySelector('meta[name="ffmpeg-api"]') || {}).content || 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
+const FFMPEG_IMAGE_API = `${FFMPEG_API}/export-image`;
+const DEFAULT_MOOD = 'cinematic';
+
+// ---- Auth ----
+function getCookie(k) {
+  return document.cookie.split(';').map(s => s.trim()).filter(Boolean)
+    .reduce((a, p) => { const [i, ...r] = p.split('='); a[i] = decodeURIComponent(r.join('=')); return a; }, {})[k];
 }
 
-const SUPABASE_URL  = (document.querySelector('meta[name="supabase-url"]')||{}).content || '';
-const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]')||{}).content || '';
-const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
-  : null;
+const SUPABASE_URL = (document.querySelector('meta[name="supabase-url"]') || {}).content || '';
+const SUPABASE_ANON = (document.querySelector('meta[name="supabase-anon"]') || {}).content || '';
+const sb = (window.supabase && SUPABASE_URL && SUPABASE_ANON) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
 
-(async function ensureSession(){
+(async function ensureSession() {
   try {
     if (!sb) {
-      // No supabase client; fall back to cookie, otherwise show inline auth
-      if (getCookie('pe_auth') !== '1') {
-        document.getElementById('inlineAuth').classList.remove('hidden');
-      }
+      if (getCookie('pe_auth') !== '1') document.getElementById('inlineAuth').classList.remove('hidden');
       return;
     }
     const { data: { session } } = await sb.auth.getSession();
-    if (session && session.user) {
-      document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age='+(60*60*24*180);
+    if (session?.user) {
+      document.cookie = 'pe_auth=1; Path=/; SameSite=Lax; Max-Age=' + (60 * 60 * 24 * 180);
+      // Ensure pe_anon for /api/generate (credits tracking) — stable per user
+      if (!getCookie('pe_anon')) {
+        const id = 'supa_' + session.user.id.replace(/-/g, '').slice(0, 24);
+        document.cookie = `pe_anon=${encodeURIComponent(id)}; Path=/; SameSite=Lax; Max-Age=${60*60*24*365}`;
+      }
     } else {
-      // No session: show inline auth form instead of redirecting
       document.getElementById('inlineAuth').classList.remove('hidden');
     }
-    sb.auth.onAuthStateChange((_event, s) => {
+    sb.auth.onAuthStateChange((_, s) => {
       if (!s) {
         document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
         document.getElementById('inlineAuth').classList.remove('hidden');
       }
     });
   } catch (e) {
-    console.error('Auth session check failed:', e);
+    console.error('Auth:', e);
     document.getElementById('inlineAuth').classList.remove('hidden');
   }
 })();
 
-// ---- Shared media state (must match index.html) ----
-let mediaType = null; // 'image' | 'video'
+// ---- State ----
+let mediaType = null;
 window._selectedAudio = null;
+window._videoFrames = [];
 
-const DEFAULT_MOOD = 'cinematic background';
+// ---- Helpers ----
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
 
+function formatTime(s) { return Math.round(s * 10) / 10 + 's'; }
 
-  // ---- Image helpers (kept 1:1 with index.html) ----
-  function fileToDataUrl(file){
-    return new Promise((resolve,reject)=>{
-      const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    });
-  }
-  const mediaInput = document.getElementById('media');
-  const imgPreview = document.getElementById('imgPreview');
-  const videoPreview = document.getElementById('videoPreview');
-
-  if (mediaInput) {
-    mediaInput.addEventListener('change', async () => {
-      const file = mediaInput.files?.[0];
-      if (!file) return;
-
-      window._selectedAudio = null;
-      // 🎵 Auto-load music suggestions on media upload (match index.html)
-      loadAudio(DEFAULT_MOOD);
-      hint.textContent = `Suggested music: ${DEFAULT_MOOD}`;
-
-      if (file.type.startsWith('image/')) {
-        mediaType = 'image';
-
-        const reader = new FileReader();
-        reader.onload = () => {
-          imgPreview.src = reader.result;
-          imgPreview.classList.remove('hidden');
-          videoPreview.classList.add('hidden');
-          videoPreview.src = '';
-        };
-        reader.readAsDataURL(file);
+// ---- Drag & drop ----
+const dropZone = document.getElementById('dropZone');
+const mediaInput = document.getElementById('media');
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+  dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (ev === 'drop') {
+      dropZone.classList.remove('drag-over');
+      const f = e.dataTransfer?.files?.[0];
+      if (f && (f.type.startsWith('image/') || f.type.startsWith('video/'))) {
+        const dt = new DataTransfer();
+        dt.items.add(f);
+        mediaInput.files = dt.files;
+        mediaInput.dispatchEvent(new Event('change'));
       }
+    } else if (ev === 'dragleave') dropZone.classList.remove('drag-over');
+    else dropZone.classList.add('drag-over');
+  });
+});
 
-      else if (file.type.startsWith('video/')) {
-        mediaType = 'video';
+// ---- Media handling + video frames ----
+const imgPreview = document.getElementById('imgPreview');
+const videoPreview = document.getElementById('videoPreview');
+const videoContainer = document.getElementById('videoContainer');
+const trimPanel = document.getElementById('trimPanel');
+const trimStart = document.getElementById('trimStart');
+const trimEnd = document.getElementById('trimEnd');
+const trimDuration = document.getElementById('trimDuration');
+const hint = document.getElementById('hint');
 
-        videoPreview.src = URL.createObjectURL(file);
-        videoPreview.classList.remove('hidden');
-        imgPreview.classList.add('hidden');
-        imgPreview.src = '';
-      }
-    });
-  }
+function updateTrimUI() {
+  if (!videoPreview.duration || !isFinite(videoPreview.duration)) return;
+  const dur = videoPreview.duration;
+  trimStart.max = dur;
+  trimEnd.max = dur;
+  trimEnd.value = dur;
+  trimDuration.textContent = `${formatTime(trimStart.value)} – ${formatTime(trimEnd.value)}`;
+}
 
-  // ---- Generate ----
-  const topic=document.getElementById('topic');
-  const go=document.getElementById('go');
-  const hint=document.getElementById('hint');
-  const out=document.getElementById('out');
+if (mediaInput) {
+  mediaInput.addEventListener('change', async () => {
+    const file = mediaInput.files?.[0];
+    if (!file) return;
 
-  async function generate(){
-    out.innerHTML=''; hint.textContent='Generating…';
+    window._selectedAudio = null;
+    loadAudio(DEFAULT_MOOD);
+    hint.textContent = `Suggested music: ${DEFAULT_MOOD}`;
 
-    let imageDataUrl = '';
-    if (mediaType === 'image') {
-      const f = document.getElementById('media')?.files?.[0];
-      if (f) imageDataUrl = await fileToDataUrl(f);
-    }
+    if (file.type.startsWith('image/')) {
+      mediaType = 'image';
+      imgPreview.src = await fileToDataUrl(file);
+      imgPreview.classList.remove('hidden');
+      videoContainer.classList.add('hidden');
+      trimPanel.classList.add('hidden');
+      videoPreview.src = '';
+      window._videoFrames = [];
+    } else if (file.type.startsWith('video/')) {
+      mediaType = 'video';
+      videoPreview.src = URL.createObjectURL(file);
+      videoContainer.classList.remove('hidden');
+      imgPreview.classList.add('hidden');
+      imgPreview.src = '';
+      window._videoFrames = [];
 
-    try{
-      const res = await fetch('/api/generate', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ prompt: topic.value, imageDataUrl })
-      });
-      if (res.status === 402) {
-        hint.textContent = 'Free limit reached. Please upgrade to Pro.';
-        return;
-      }
-      if (!res.ok) {
-        const text = await res.text().catch(()=> '');
-        hint.textContent = 'Server error ('+res.status+'): '+(text||'');
-        return;
-      }
-      const j = await res.json();
-
-      // 🔊 Auto-suggest background music (same behavior as index.html)
-      const mood = j.suggestedMood || 'cinematic background';
-      loadAudio(mood);
-      hint.textContent = `Suggested music: ${mood}`;
-
-      // Update credits after successful generation (new logic)
-      if (typeof j.credits_left === 'number') {
-        const creditsEl = document.getElementById('credits');
-        creditsEl.textContent = j.credits_left;
-      }
-
-      // ---- Universal caption extractor (no key assumptions) ----
-      function extractCaptions(obj, acc = []) {
-        if (!obj) return acc;
-
-        if (Array.isArray(obj)) {
-          // array of strings → captions
-          if (obj.every(v => typeof v === 'string')) {
-            acc.push(...obj);
-          } else {
-            obj.forEach(v => extractCaptions(v, acc));
-          }
-        } else if (typeof obj === 'object') {
-          for (const k in obj) {
-            extractCaptions(obj[k], acc);
-          }
-        } else if (typeof obj === 'string') {
-          // single caption fallback (avoid tiny noise strings)
-          if (obj.length > 20) acc.push(obj);
+      videoPreview.onloadedmetadata = () => {
+        if (videoPreview.duration > 30) {
+          alert('Video must be 30 seconds or less');
+          mediaInput.value = '';
+          mediaType = null;
+          videoContainer.classList.add('hidden');
+          return;
         }
-        return acc;
-      }
+        trimPanel.classList.remove('hidden');
+        document.getElementById('noMusicLabel')?.classList.remove('hidden');
+        trimStart.value = 0;
+        trimEnd.value = videoPreview.duration;
+        updateTrimUI();
 
-      let captions = extractCaptions(j)
-        .map(s => s.trim())
-        .filter(s => s.length > 20);
+        // Extract frames for caption generation
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = videoPreview.videoWidth;
+        canvas.height = videoPreview.videoHeight;
+        const maxFrames = Math.min(8, Math.floor(videoPreview.duration));
+        let t = 0;
 
-      // de‑dupe
-      captions = [...new Set(captions)];
+        videoPreview.onseeked = () => {
+          ctx.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+          window._videoFrames.push(canvas.toDataURL('image/jpeg', 0.6));
+          t++;
+          if (t < maxFrames) videoPreview.currentTime = t;
+        };
+        videoPreview.currentTime = 0;
+      };
+    }
+  });
+}
 
-      if (!captions.length) {
-        console.warn('Caption payload (no extractable captions):', j);
-        hint.textContent = 'No captions returned.';
-        return;
-      }
+trimStart?.addEventListener('input', () => { trimEnd.min = trimStart.value; updateTrimUI(); });
+trimEnd?.addEventListener('input', () => { trimStart.max = trimEnd.value; updateTrimUI(); });
 
-      captions.forEach(text=>{
-        const card=document.createElement('div'); card.className='bg-black/30 border border-white/10 rounded-xl p-4';
-        const pre=document.createElement('pre'); pre.style.whiteSpace='pre-wrap'; pre.style.margin='0 0 .75rem 0'; pre.textContent=text;
+// ---- Generate ----
+const topic = document.getElementById('topic');
+const go = document.getElementById('go');
+const out = document.getElementById('out');
 
-        const tagWrap=document.createElement('div'); tagWrap.className='mt-2 pt-2 border-t border-white/10';
-        const tagTitle=document.createElement('div'); tagTitle.className='text-sm opacity-80 mb-1'; tagTitle.textContent='Hashtags';
-        const tagLine=document.createElement('div'); tagLine.className='text-sm opacity-90 break-words';
-        tagLine.textContent = (j.hashtags && j.hashtags.length) ? j.hashtags.join(' ') : '';
-
-        const actions=document.createElement('div'); actions.className='mt-3 flex gap-2';
-        const copyCap=document.createElement('button'); copyCap.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyCap.textContent='📋 Copy caption';
-        copyCap.onclick=async()=>{await navigator.clipboard.writeText(text);copyCap.textContent='✅ Copied';setTimeout(()=>copyCap.textContent='📋 Copy caption',1200);};
-        const copyTags=document.createElement('button'); copyTags.className='rounded-lg border border-white/20 px-3 py-1.5 text-sm'; copyTags.textContent='🏷️ Copy hashtags';
-        copyTags.onclick=async()=>{await navigator.clipboard.writeText(tagLine.textContent);copyTags.textContent='✅ Copied';setTimeout(()=>copyTags.textContent='🏷️ Copy hashtags',1200);};
-
-        tagWrap.appendChild(tagTitle); tagWrap.appendChild(tagLine);
-        actions.appendChild(copyCap); actions.appendChild(copyTags);
-
-        card.appendChild(pre);
-        card.appendChild(tagWrap);
-        card.appendChild(actions);
-        out.appendChild(card);
-      });
-
-      hint.textContent='';
-    }catch(e){ hint.textContent='Network error: '+ e.message; }
+async function generate() {
+  if (!topic.value.trim() && !mediaType) {
+    hint.textContent = 'Enter a topic or upload media.';
+    return;
   }
-  go.addEventListener('click', generate);
 
-async function loadAudio(mood){
-  const list = document.getElementById('audioList');
-  hint.textContent = `Loading ${mood} music…`;
-  list.innerHTML = '<div class="opacity-70">Loading tracks…</div>';
+  out.innerHTML = '';
+  hint.textContent = 'Generating captions…';
+
+  let imageDataUrl = '';
+  if (mediaType === 'image') {
+    const f = mediaInput?.files?.[0];
+    if (f) imageDataUrl = await fileToDataUrl(f);
+  }
+
+  const platforms = [...document.querySelectorAll('input[name="platform"]:checked')].map(cb => cb.value);
 
   try {
-    const res = await fetch('/api/audio-search',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: topic.value.trim(),
+        contentType: mediaType || 'text',
+        platforms: platforms.length ? platforms : ['instagram'],
+        imageDataUrl,
+        videoMeta: mediaType === 'video' ? { duration: videoPreview.duration } : null,
+        videoFrames: mediaType === 'video' ? (window._videoFrames || []) : []
+      })
+    });
+
+    if (res.status === 402) {
+      hint.textContent = 'Free limit reached. Upgrade to Pro.';
+      return;
+    }
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      hint.textContent = 'Error: ' + (text || res.status);
+      return;
+    }
+
+    const j = await res.json();
+
+    const mood = j.suggestedMood || DEFAULT_MOOD;
+    loadAudio(mood);
+    hint.textContent = `Suggested music: ${mood}`;
+
+    if (typeof j.remaining === 'number') {
+      document.getElementById('credits').textContent = j.remaining;
+    }
+
+    // Normalize captions (array or object with instagram key)
+    let captions = [];
+    const raw = j.captions?.instagram ?? j.captions ?? [];
+    if (Array.isArray(raw)) captions = raw;
+    else if (typeof raw === 'object') captions = [raw];
+
+    const hashtags = (j.hashtags || []).filter(Boolean);
+
+    captions.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'caption-card bg-black/30 border border-white/10 rounded-xl p-5';
+
+      let captionText = '';
+      if (typeof item === 'object' && item !== null) {
+        const parts = [];
+        if (item.hook) parts.push(`🔥 ${item.hook}`);
+        if (item.caption) parts.push(item.caption);
+        if (Array.isArray(item.onscreen_text)?.length) parts.push('\nOn-screen:\n• ' + item.onscreen_text.join('\n• '));
+        captionText = parts.join('\n\n');
+      } else {
+        captionText = String(item || '');
+      }
+
+      const pre = document.createElement('pre');
+      pre.className = 'whitespace-pre-wrap text-sm leading-relaxed mb-4';
+      pre.textContent = captionText;
+
+      const tagWrap = document.createElement('div');
+      tagWrap.className = 'pt-3 border-t border-white/10';
+      const tagLine = document.createElement('div');
+      tagLine.className = 'text-sm text-white/80 break-words';
+      tagLine.textContent = hashtags.join(' ');
+
+      const actions = document.createElement('div');
+      actions.className = 'mt-3 flex gap-2';
+      const copyCap = document.createElement('button');
+      copyCap.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm hover:bg-white/10 transition';
+      copyCap.textContent = '📋 Copy caption';
+      copyCap.onclick = async () => {
+        await navigator.clipboard.writeText(captionText);
+        copyCap.textContent = '✅ Copied';
+        setTimeout(() => copyCap.textContent = '📋 Copy caption', 1200);
+      };
+      const copyTags = document.createElement('button');
+      copyTags.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm hover:bg-white/10 transition';
+      copyTags.textContent = '🏷️ Copy hashtags';
+      copyTags.onclick = async () => {
+        await navigator.clipboard.writeText(tagLine.textContent);
+        copyTags.textContent = '✅ Copied';
+        setTimeout(() => copyTags.textContent = '🏷️ Copy hashtags', 1200);
+      };
+
+      tagWrap.appendChild(tagLine);
+      actions.appendChild(copyCap);
+      actions.appendChild(copyTags);
+      card.appendChild(pre);
+      card.appendChild(tagWrap);
+      card.appendChild(actions);
+      out.appendChild(card);
+    });
+
+    if (!out.children.length) hint.textContent = 'No captions returned.';
+    else hint.textContent = '';
+  } catch (e) {
+    hint.textContent = 'Network error: ' + e.message;
+  }
+}
+go.addEventListener('click', generate);
+
+// ---- Audio ----
+async function loadAudio(mood) {
+  const list = document.getElementById('audioList');
+  list.innerHTML = '<div class="text-white/60 text-sm">Loading tracks…</div>';
+
+  try {
+    const res = await fetch('/api/audio-search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mood })
     });
-    if (!res.ok) throw new Error(`Audio API ${res.status}`);
+    if (!res.ok) throw new Error(`Audio ${res.status}`);
 
     const j = await res.json();
     const items = Array.isArray(j) ? j : (j.results || []);
@@ -352,222 +486,170 @@ async function loadAudio(mood){
     list.innerHTML = '';
     let autoSelected = false;
 
-    items.slice(0,5).forEach((a, idx)=>{
+    items.slice(0, 5).forEach((a, idx) => {
       const row = document.createElement('div');
       row.className = 'flex items-center gap-2 bg-black/30 border border-white/10 rounded-lg p-2';
 
       const audio = document.createElement('audio');
       audio.src = a.preview;
       audio.controls = true;
+      audio.className = 'flex-1 max-w-[200px]';
 
       const use = document.createElement('button');
-      use.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm';
+      use.className = 'rounded-lg border border-white/20 px-3 py-1.5 text-sm hover:bg-white/10';
       use.textContent = 'Use';
-      use.onclick = ()=>{
+      use.onclick = () => {
         window._selectedAudio = { preview: a.preview };
-        [...list.children].forEach(c=>c.classList.remove('ring-2','ring-white'));
-        row.classList.add('ring-2','ring-white');
-        hint.textContent = 'Background music selected ✓';
+        [...list.children].forEach(c => c.classList.remove('ring-2', 'ring-pink-500'));
+        row.classList.add('ring-2', 'ring-pink-500');
+        hint.textContent = 'Music selected ✓';
       };
 
       row.appendChild(audio);
       row.appendChild(use);
       list.appendChild(row);
 
-      // auto-select first track
-      if (!autoSelected && idx === 0 && a.preview){
+      if (!autoSelected && idx === 0 && a.preview) {
         window._selectedAudio = { preview: a.preview };
-        row.classList.add('ring-2','ring-white');
+        row.classList.add('ring-2', 'ring-pink-500');
         autoSelected = true;
-        hint.textContent = 'Background music auto-selected ✓';
+        hint.textContent = 'Music auto-selected ✓';
       }
     });
 
-    if (!items.length){
-      list.innerHTML = '<div class="opacity-70">No tracks found.</div>';
-      hint.textContent = 'No music found.';
-    }
-  } catch(e){
-    list.innerHTML = '<div class="opacity-70">Failed to load audio</div>';
-    hint.textContent = 'Failed to load audio.';
+    if (!items.length) list.innerHTML = '<div class="text-white/60 text-sm">No tracks found.</div>';
+  } catch (e) {
+    list.innerHTML = '<div class="text-white/60 text-sm">Failed to load audio.</div>';
   }
 }
-
 window.loadAudio = loadAudio;
 
-  // ---- Music mood chips (same as index.html) ----
-  document.querySelectorAll('.music-chip').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const mood = btn.dataset.mood;
-      loadAudio(mood);
-      hint.textContent = `Suggested music: ${mood}`;
-    });
+document.querySelectorAll('.music-chip').forEach(btn => {
+  btn.addEventListener('click', () => {
+    loadAudio(btn.dataset.mood);
+    hint.textContent = `Loading ${btn.dataset.mood}…`;
   });
+});
 
-const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
-const FFMPEG_IMAGE_API = `${FFMPEG_API}/export-image`;
+// ---- Export ----
+async function exportFinalVideo() {
+  const noMusic = document.getElementById('exportNoMusic')?.checked;
 
-async function exportFinalVideo(){
-  console.log('Export check → selectedAudio:', window._selectedAudio);
-
-  if (!window._selectedAudio || !window._selectedAudio.preview){
-    alert('Please select background music');
-    return;
+  // For image→video, music is required. For video, optional.
+  if (mediaType === 'image') {
+    if (!window._selectedAudio?.preview) {
+      alert('Please select background music for image export');
+      return;
+    }
+  } else if (mediaType === 'video') {
+    if (!noMusic && (!window._selectedAudio || !window._selectedAudio.preview)) {
+      alert('Select background music or check "Export without music"');
+      return;
+    }
   }
 
   hint.textContent = 'Exporting… this may take ~30s';
 
   try {
-    // 🖼️ IMAGE → VIDEO
     if (mediaType === 'image') {
-      const file = document.getElementById('media')?.files?.[0];
-      if (!file) {
-        alert('Image missing');
-        return;
-      }
+      const file = mediaInput?.files?.[0];
+      if (!file) { alert('Image missing'); return; }
 
       const imageDataUrl = await fileToDataUrl(file);
-
       const res = await fetch(FFMPEG_IMAGE_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           imageBase64: imageDataUrl,
-          audioUrl: window._selectedAudio.preview,
+          audioUrl: noMusic ? null : window._selectedAudio.preview,
           duration: 7
         })
       });
 
-      // --- Begin: updated IMAGE export response handling (parity with index.html) ---
       const text = await res.text();
       let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(text.slice(0,200));
-      }
+      try { data = JSON.parse(text); } catch { throw new Error(text.slice(0, 200)); }
+      if (!data.success) throw new Error(data.error || 'Export failed');
 
-      if (!data.success) throw new Error(data.error || 'Image export failed');
-
-      if (data.downloadUrl) {
-        window.location.href = data.downloadUrl;
-      } else if (data.output) {
-        const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
-        window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
-      } else {
-        throw new Error('No download URL returned');
-      }
-
+      if (data.downloadUrl) window.location.href = data.downloadUrl;
+      else if (data.output) window.location.href = `${FFMPEG_API}/download?file=${encodeURIComponent(data.output)}`;
+      else throw new Error('No download URL');
       hint.textContent = '';
       return;
-      // --- End: updated IMAGE export response handling ---
     }
 
-    // 🎥 VIDEO
     if (mediaType !== 'video') {
-      alert('Please upload an image or video first');
+      alert('Upload an image or video first');
       return;
     }
 
-    const file = document.getElementById('media')?.files?.[0];
-    if (!file) {
-      alert('Video file missing');
-      return;
-    }
+    const file = mediaInput?.files?.[0];
+    if (!file) { alert('Video missing'); return; }
 
     const fd = new FormData();
     fd.append('video', file);
-    fd.append('audioUrl', window._selectedAudio.preview);
+    if (!noMusic) fd.append('audioUrl', window._selectedAudio.preview);
+    // Trim params for backend (if supported)
+    fd.append('trimStart', trimStart?.value || 0);
+    fd.append('trimEnd', trimEnd?.value || videoPreview.duration);
 
-    const res = await fetch(`${FFMPEG_API}/export`, {
-      method: 'POST',
-      body: fd
-    });
+    const res = await fetch(`${FFMPEG_API}/export`, { method: 'POST', body: fd });
 
-    // --- Begin: updated VIDEO export response handling (parity with index.html) ---
     const text = await res.text();
     let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error(text.slice(0,200));
-    }
+    try { data = JSON.parse(text); } catch { throw new Error(text.slice(0, 200)); }
+    if (!data.success) throw new Error(data.error || 'Export failed');
 
-    if (!data.success) {
-      throw new Error(data.error || 'Export failed');
-    }
-
-    if (data.downloadUrl) {
-      window.location.href = data.downloadUrl;
-    } else if (data.output) {
-      const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
-      window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
-    } else {
-      throw new Error('No download URL returned');
-    }
+    if (data.downloadUrl) window.location.href = data.downloadUrl;
+    else if (data.output) window.location.href = `${FFMPEG_API}/download?file=${encodeURIComponent(data.output)}`;
+    else throw new Error('No download URL');
 
     hint.textContent = '';
-    // --- End: updated VIDEO export response handling ---
-  } catch(e){
+  } catch (e) {
     hint.textContent = 'Export failed: ' + e.message;
   }
 }
-
 window.exportFinalVideo = exportFinalVideo;
 
-const exportBtn=document.getElementById('exportBtn');
-if (exportBtn) exportBtn.addEventListener('click', exportFinalVideo);
+document.getElementById('exportBtn').addEventListener('click', exportFinalVideo);
 
+// ---- Sign out ----
+document.getElementById('signOutLink')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  try { if (sb) await sb.auth.signOut(); } catch {}
+  document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
+  window.location.href = '/';
+});
 
+// ---- Inline auth handlers ----
+(function attachInlineAuth() {
+  if (!sb) return;
+  const btn = document.getElementById('authSignin2');
+  const msg = document.getElementById('authMsg2');
+  const em = document.getElementById('authEmail2');
+  const pw = document.getElementById('authPass2');
+  const gg = document.getElementById('authGoogle2');
 
-  // ---- Sign out: clear cookie and go back to guest landing ----
-    (function(){
-    const el = document.getElementById('signOutLink');
-    if(!el) return;
-    el.addEventListener('click', async (e)=>{
-      e.preventDefault();
-      try {
-        if (sb) { await sb.auth.signOut(); } // <-- real sign-out
-      } catch {}
-      document.cookie = 'pe_auth=; Path=/; Max-Age=0; SameSite=Lax';
-      window.location.href = '/';
-    });
-  })();
+  if (btn) btn.onclick = async () => {
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value });
+      if (error) {
+        if (/Invalid login credentials/i.test(error.message)) {
+          msg.innerHTML = 'Invalid credentials. Use Google if you signed up with Google, or reset password.';
+        } else if (/Email not confirmed/i.test(error.message)) {
+          msg.textContent = 'Confirm your email first.';
+        } else msg.textContent = error.message;
+        return;
+      }
+      location.reload();
+    } catch (e) { msg.textContent = e?.message || 'Sign in failed.'; }
+  };
 
-  (function attachInlineAuth(){
-    if (!sb) return;
-    const btn = document.getElementById('authSignin2');
-    const msg = document.getElementById('authMsg2');
-    const em  = document.getElementById('authEmail2');
-    const pw  = document.getElementById('authPass2');
-    const gg  = document.getElementById('authGoogle2');
-
-    if (btn) btn.onclick = async () => {
-      try {
-        const { error } = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value });
-        if (error) {
-          // Helpful hints for the common cases
-          if (/Invalid login credentials/i.test(error.message)) {
-            msg.innerHTML = `Invalid login credentials.
-              <br/>• If you signed up with Google, use <b>Continue with Google</b>.
-              <br/>• Or click <b>Forgot password</b> on the homepage to set a password for this email.`;
-          } else if (/Email not confirmed/i.test(error.message)) {
-            msg.textContent = 'Please confirm your email first (check your inbox).';
-          } else {
-            msg.textContent = error.message;
-          }
-          return;
-        }
-        // success: hide inline form and refresh page UI
-        location.reload();
-      } catch(e){ msg.textContent = e?.message || 'Could not sign in.'; }
-    };
-
-    if (gg) gg.onclick = async ()=>{
-      const r = await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + '/app.user.html' } });
-      if (r?.error) msg.textContent = r.error.message;
-    };
-  })();
+  if (gg) gg.onclick = async () => {
+    const r = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/app.user.html' } });
+    if (r?.error) msg.textContent = r.error.message;
+  };
+})();
 </script>
 </body>
 </html>

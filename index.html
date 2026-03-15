@@ -5,15 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>postEngineAI — Free demo (2 captions)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Supabase Auth (email/password + Google) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
   <meta name="supabase-url" content="https://gstimoeysvzskmrnehfv.supabase.co">
   <meta name="supabase-anon" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzdGltb2V5c3Z6c2ttcm5laGZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc4MjIwODgsImV4cCI6MjA3MzM5ODA4OH0.Pe9RUEHM1xK2qqK7n13M7ErAgZcuAVSGXDq1Yr2aP1o">
+  <meta name="ffmpeg-api" content="https://periproctic-maricela-nonpatently.ngrok-free.dev">
   <style>
-    :root{--ig:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+    body{font-family:'Outfit',system-ui,sans-serif}
+    :root{--ig:linear-gradient(135deg,#F58529 0%,#DD2A7B 50%,#8134AF 100%);--accent:#DD2A7B}
     .ig{background-image:var(--ig)}
-    .glass{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-    .chip{display:inline-block;background:#0e141b;color:#fff;border-radius:9999px;padding:.45rem .8rem}
+    .glass{background:rgba(255,255,255,.06);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
+    .chip{display:inline-block;background:rgba(255,255,255,.08);color:#fff;border-radius:9999px;padding:.5rem 1rem;transition:all .2s}
+    .chip:hover{background:rgba(255,255,255,.15)}
+    .drop-zone{border:2px dashed rgba(255,255,255,.2);border-radius:1rem;transition:all .2s;cursor:pointer}
+    .drop-zone.drag-over,.drop-zone:hover{border-color:var(--accent);background:rgba(221,42,123,.1)}
+    .btn-primary{background:linear-gradient(135deg,#F58529,#DD2A7B)}
   </style>
 </head>
 <body class="bg-slate-950 text-white">
@@ -54,15 +61,25 @@
         <label class="block text-sm opacity-90">Describe your niche or post idea</label>
         <input id="topic" class="mt-2 w-full rounded-xl bg-black/30 border border-white/10 px-4 py-3 outline-none" placeholder="e.g., pet grooming tips, morning workout motivation" />
         
-        <!-- Media options (optional image; location auto on server) -->
+        <!-- Media: drag-drop + file input -->
         <div class="mt-4 grid gap-3">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label for="media" class="text-sm opacity-90">Optional image or video (≤30s)</label>
-            <input id="media" type="file" accept="image/*,video/*" class="text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-white file:text-black file:font-medium">
+          <label class="block text-sm opacity-90">Photo or video (optional)</label>
+          <div id="dropZone" class="drop-zone p-6 text-center" onclick="document.getElementById('media').click()">
+            <input id="media" type="file" accept="image/*,video/*" class="hidden">
+            <p class="text-white/70">Drag & drop or <span class="text-pink-400 underline">browse</span></p>
+            <p class="text-sm text-white/50 mt-1">Image or video ≤30s</p>
           </div>
-          <img id="imgPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10" alt="Selected image preview" />
-          <video id="videoPreview" class="hidden mt-1 max-h-40 rounded-lg border border-white/10"
-  controls></video>
+          <img id="imgPreview" class="hidden mt-2 max-h-40 rounded-xl border border-white/10 object-cover" alt="Preview" />
+          <div id="videoContainer" class="hidden mt-2">
+            <video id="videoPreview" class="max-h-40 rounded-xl border border-white/10" controls playsinline></video>
+            <div id="trimPanel" class="hidden mt-3 p-3 rounded-xl bg-black/30 border border-white/10">
+              <div class="flex items-center gap-2 mb-2 text-sm">✂️ Trim: <span id="trimDuration" class="text-white/60">0s – 0s</span></div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="text-xs text-white/60">Start (s)</label><input id="trimStart" type="number" min="0" step="0.5" value="0" class="w-full rounded bg-black/40 border border-white/10 px-2 py-1 text-sm mt-0.5"></div>
+                <div><label class="text-xs text-white/60">End (s)</label><input id="trimEnd" type="number" min="0" step="0.5" value="0" class="w-full rounded bg-black/40 border border-white/10 px-2 py-1 text-sm mt-0.5"></div>
+              </div>
+            </div>
+          </div>
           <div id="audioBox" class="hidden mt-4">
             <div class="text-sm opacity-90 mb-2">🎵 Background music (royalty-free)</div>
             <div class="flex gap-2 mb-2 flex-wrap">
@@ -73,10 +90,7 @@
             </div>
             <div id="audioList" class="grid gap-2"></div>
 
-<p class="mt-2 text-xs text-white/70">
-  ℹ️ Background music is optional. You can export without audio or replace it later.
-  <span class="opacity-60">Advanced audio editing is available in Pro.</span>
-</p>
+<p class="mt-2 text-xs text-white/70">Background music is optional. <label class="cursor-pointer"><input id="exportNoMusic" type="checkbox" class="rounded mr-1">Export video without music</label></p>
           </div>
         </div>
         <div class="mt-4 flex items-center gap-2">
@@ -118,9 +132,9 @@
   document.addEventListener('DOMContentLoaded', () => {
     // 🔒 Force guest mode on index.html (never allow logged-in state here)
     document.cookie = 'pe_auth=; Max-Age=0; Path=/';
-    console.log('index.html DOM ready');
-    const FFMPEG_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export';
-    const FFMPEG_IMAGE_API = 'https://periproctic-maricela-nonpatently.ngrok-free.dev/export-image';
+    const FF_BASE = (document.querySelector('meta[name="ffmpeg-api"]')||{}).content || 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
+    const FFMPEG_API = FF_BASE + '/export';
+    const FFMPEG_IMAGE_API = FF_BASE + '/export-image';
   // Helpers
   function setCookie(k,v,days){const d=new Date();d.setTime(d.getTime()+days*864e5);document.cookie=k+'='+encodeURIComponent(v)+';expires='+d.toUTCString()+';path=/;SameSite=Lax';}
   function getCookie(k){return document.cookie.split(';').map(s=>s.trim()).filter(Boolean).reduce((a,p)=>{const[i,...r]=p.split('=');a[i]=decodeURIComponent(r.join('='));return a;}, {})[k];}
@@ -166,9 +180,39 @@ if (!getCookie(C_KEY)) {
   const mediaInput = document.getElementById('media');
   const imgPreview = document.getElementById('imgPreview');
   const videoPreview = document.getElementById('videoPreview');
-let mediaType = null;
-let selectedAudio = null; // SINGLE source of truth for guest audio
-window._videoFrames = [];
+  const videoContainer = document.getElementById('videoContainer');
+  const trimPanel = document.getElementById('trimPanel');
+  const trimStart = document.getElementById('trimStart');
+  const trimEnd = document.getElementById('trimEnd');
+  const trimDuration = document.getElementById('trimDuration');
+  let mediaType = null;
+  let selectedAudio = null;
+  window._videoFrames = [];
+
+  function formatTime(s){ return (Math.round(s*10)/10) + 's'; }
+  function updateTrimUI(){
+    if (!videoPreview.duration || !isFinite(videoPreview.duration)) return;
+    const d = videoPreview.duration;
+    trimStart.max = d; trimEnd.max = d; trimEnd.value = d;
+    trimDuration.textContent = formatTime(trimStart.value) + ' – ' + formatTime(trimEnd.value);
+  }
+
+  // Drag-drop
+  const dropZone = document.getElementById('dropZone');
+  ['dragenter','dragover','dragleave','drop'].forEach(ev=>{
+    dropZone.addEventListener(ev, e=>{
+      e.preventDefault(); e.stopPropagation();
+      if (ev==='drop'){
+        dropZone.classList.remove('drag-over');
+        const f = e.dataTransfer?.files?.[0];
+        if (f && (f.type.startsWith('image/')||f.type.startsWith('video/'))){
+          const dt = new DataTransfer(); dt.items.add(f);
+          mediaInput.files = dt.files; mediaInput.dispatchEvent(new Event('change'));
+        }
+      } else if (ev==='dragleave') dropZone.classList.remove('drag-over');
+      else dropZone.classList.add('drag-over');
+    });
+  });
 
   if (mediaInput) {
     mediaInput.addEventListener('change', async () => {
@@ -176,7 +220,8 @@ window._videoFrames = [];
       if (!f) {
         mediaType = null;
         imgPreview.classList.add('hidden');
-        videoPreview.classList.add('hidden');
+        videoContainer.classList.add('hidden');
+        trimPanel.classList.add('hidden');
         document.getElementById('audioBox').classList.add('hidden');
         selectedAudio = null;
         return;
@@ -184,10 +229,10 @@ window._videoFrames = [];
 
       if (f.type.startsWith('image/')) {
         mediaType = 'image';
-        const url = await fileToDataUrl(f);
-        imgPreview.src = url;
+        imgPreview.src = await fileToDataUrl(f);
         imgPreview.classList.remove('hidden');
-        videoPreview.classList.add('hidden');
+        videoContainer.classList.add('hidden');
+        trimPanel.classList.add('hidden');
         document.getElementById('audioBox').classList.remove('hidden');
         selectedAudio = null;
       }
@@ -195,7 +240,7 @@ window._videoFrames = [];
       if (f.type.startsWith('video/')) {
         mediaType = 'video';
         videoPreview.src = URL.createObjectURL(f);
-        videoPreview.classList.remove('hidden');
+        videoContainer.classList.remove('hidden');
         imgPreview.classList.add('hidden');
         document.getElementById('audioBox').classList.remove('hidden');
 
@@ -204,14 +249,17 @@ window._videoFrames = [];
             alert('Video must be 30 seconds or less');
             mediaInput.value = '';
             mediaType = null;
-            videoPreview.classList.add('hidden');
+            videoContainer.classList.add('hidden');
             window._videoFrames = [];
             document.getElementById('audioBox').classList.add('hidden');
             selectedAudio = null;
             return;
           }
+          trimPanel.classList.remove('hidden');
+          trimStart.value = 0; trimEnd.value = videoPreview.duration;
+          updateTrimUI();
 
-          // Sample frames: 1 frame per second, max 8 frames
+          // Sample frames for caption generation
           window._videoFrames = [];
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
@@ -233,6 +281,9 @@ window._videoFrames = [];
       }
     });
   }
+  trimStart?.addEventListener('input', ()=>{ trimEnd.min = trimStart.value; updateTrimUI(); });
+  trimEnd?.addEventListener('input', ()=>{ trimStart.max = trimEnd.value; updateTrimUI(); });
+
   // --- Audio picker logic ---
   async function loadAudio(mood) {
     const list = document.getElementById('audioList');
@@ -408,52 +459,36 @@ window._videoFrames = [];
   
   // Export video function (FFmpeg backend)
   async function exportFinalVideo() {
-    console.log('EXPORT CHECK:', { mediaType, selectedAudio });
-
-    // Fail-safe: if list loaded but nothing selected, select first visible audio
-    if (!selectedAudio) {
-      const first = document.querySelector('#audioList audio');
-      if (first && first.src) {
-        selectedAudio = { preview: first.src };
-        console.log('🎵 Fail-safe auto-select:', selectedAudio);
-      }
-    }
+    const noMusic = document.getElementById('exportNoMusic')?.checked;
 
     if (mediaType === 'image') {
-      if (!selectedAudio || !selectedAudio.preview) {
+      if (!selectedAudio?.preview) {
+        const first = document.querySelector('#audioList audio');
+        if (first?.src) selectedAudio = { preview: first.src };
+      }
+      if (!selectedAudio?.preview) {
         alert('Please select background music');
         return;
       }
-
-      hint.textContent = 'Creating video from image… this may take ~20s';
-
-      const file = mediaInput.files[0];
-      if (!file) {
-        alert('Image file missing');
-        return;
-      }
-
-      const imageDataUrl = await fileToDataUrl(file);
-
-      const res = await fetch(FFMPEG_IMAGE_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: imageDataUrl,
-          audioUrl: selectedAudio.preview,
-          duration: 7
-        })
-      });
-
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); }
-      catch { throw new Error(text.slice(0,200)); }
-
-      if (!data.success) throw new Error(data.error || 'Image export failed');
-
-      window.location.href = data.downloadUrl;
-      hint.textContent = '';
+      hint.textContent = 'Creating video from image… ~20s';
+      try {
+        const file = mediaInput.files[0];
+        if (!file) { alert('Image file missing'); return; }
+        const imageDataUrl = await fileToDataUrl(file);
+        const res = await fetch(FFMPEG_IMAGE_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: imageDataUrl, audioUrl: selectedAudio.preview, duration: 7 })
+        });
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { throw new Error(text.slice(0,200)); }
+        if (!data.success) throw new Error(data.error || 'Image export failed');
+        if (data.downloadUrl) window.location.href = data.downloadUrl;
+        else if (data.output) window.location.href = `${FF_BASE}/download?file=${encodeURIComponent(data.output)}`;
+        else throw new Error('No download URL');
+        hint.textContent = '';
+      } catch (e) { hint.textContent = 'Export failed: ' + e.message; }
       return;
     }
 
@@ -462,23 +497,28 @@ window._videoFrames = [];
       return;
     }
 
-    if (!selectedAudio || !selectedAudio.preview) {
-      alert('Please select background music');
-      return;
+    if (!noMusic) {
+      if (!selectedAudio?.preview) {
+        const first = document.querySelector('#audioList audio');
+        if (first?.src) selectedAudio = { preview: first.src };
+      }
+      if (!selectedAudio?.preview) {
+        alert('Select background music or check "Export without music"');
+        return;
+      }
     }
 
-    hint.textContent = 'Exporting video… this may take ~30s';
+    hint.textContent = 'Exporting video… ~30s';
 
     try {
       const file = mediaInput.files[0];
-      if (!file) {
-        alert('Video file missing');
-        return;
-      }
+      if (!file) { alert('Video file missing'); return; }
 
       const fd = new FormData();
       fd.append('video', file);
-      fd.append('audioUrl', selectedAudio.preview);
+      if (!noMusic) fd.append('audioUrl', selectedAudio.preview);
+      fd.append('trimStart', trimStart?.value || 0);
+      fd.append('trimEnd', trimEnd?.value || videoPreview.duration);
 
       const res = await fetch(FFMPEG_API, {
         method: 'POST',
@@ -498,9 +538,10 @@ window._videoFrames = [];
 
       if (data.downloadUrl) {
         window.location.href = data.downloadUrl;
+      } else if (data.output) {
+        window.location.href = `${FF_BASE}/download?file=${encodeURIComponent(data.output)}`;
       } else {
-        const base = 'https://periproctic-maricela-nonpatently.ngrok-free.dev';
-        window.location.href = `${base}/download?file=${encodeURIComponent(data.output)}`;
+        throw new Error('No download URL');
       }
       hint.textContent = '';
     } catch (e) {

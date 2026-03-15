@@ -1,8 +1,8 @@
 // /api/generate.js
-// Real caption generation with OpenAI + trial credits (20) + optional image input.
-// Requires env: OPENAI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY (or SERVICE_ROLE_KEY)
+// Real caption generation with Anthropic Claude API + trial credits (20) + optional image input.
+// Requires env: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY (or SERVICE_ROLE_KEY)
 
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 export const config = {
   api: {
@@ -30,21 +30,16 @@ async function readJsonBody(req) {
 
 function makeSystemPrompt() {
   return [
-    "You are PostEngineAI, an assistant that writes short, catchy social captions.",
-    "Requirements:",
-    "- Return a JSON array of 6 distinct caption strings.",
-    "- Keep each caption under 180 characters when possible.",
-    "- Vary styles: punchy, playful, motivational, educational, call-to-action.",
-    "- Include relevant emojis sparingly; do not overuse hashtags (0–4).",
-    "- If an image is provided, match the caption to the image content.",
-    "- Never include quotes or code fences around the JSON.",
-    "Always return captions as plain strings in a JSON array.",
-    "For video inputs, you will receive representative video frames.",
-    "Base captions ONLY on what is visible in the frames and the video duration.",
-    "Do NOT invent actions, objects, or scenes not visible.",
-    "- Additionally, infer the most suitable background music mood for the content.",
-    "- Choose ONLY ONE word from: calm, energetic, cinematic, vlog.",
-    "- Return the mood as a JSON field named \"suggestedMood\"."
+    "You are PostEngineAI, an expert at writing scroll-stopping social captions.",
+    "Return a JSON object with:",
+    "- \"captions\": array of 6 distinct captions. Each can be a string OR object with {hook, caption, onscreen_text}.",
+    "- \"suggestedMood\": one of: calm, energetic, cinematic, vlog (for background music).",
+    "Caption rules:",
+    "- Keep each under 180 chars when possible. Vary styles: punchy, playful, motivational, educational, CTA.",
+    "- Use emojis sparingly. Match content to any provided image or video frames.",
+    "- For video: base captions ONLY on what is visible in frames. Do NOT invent scenes.",
+    "- For objects: hook = attention-grabbing opener, caption = main text, onscreen_text = optional overlay suggestions.",
+    "Return valid JSON only, no markdown fences."
   ].join("\\n");
 }
 
@@ -136,16 +131,12 @@ const country = req.headers['x-vercel-ip-country'] || '';
 const region = req.headers['x-vercel-ip-country-region'] || '';
 const locationStr = [city, region, country].filter(Boolean).join(', ');
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    const messages = [
-      {
-        role: 'system',
-        content: makeSystemPrompt() +
-          `\nContent type: ${mediaKind}.` +
-          `\nPlatforms: ${targetPlatforms.join(', ')}.` +
-          `\nInclude hook, caption, hashtags, and onscreen_text.`
-      },
-    ];
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    const systemPrompt = makeSystemPrompt() +
+      `\nContent type: ${mediaKind}.` +
+      `\nPlatforms: ${targetPlatforms.join(', ')}.` +
+      `\nInclude hook, caption, hashtags, and onscreen_text.`;
 
     const content = [];
     const topicText = prompt
@@ -156,23 +147,34 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       type: 'text',
       text: `Create ${mediaKind} captions for ${targetPlatforms.join(', ')}. ${topicText} Video length: ${videoDuration || 'n/a'} seconds.`
     });
-    if (imageDataUrl) content.push({ type: 'image_url', image_url: { url: imageDataUrl } });
+
+    // Convert data URLs to Claude's image format: { type, source: { type, media_type, data } }
+    function toClaudeImage(dataUrl) {
+      const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
+      if (!m) return null;
+      return { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } };
+    }
+
+    if (imageDataUrl) {
+      const img = toClaudeImage(imageDataUrl);
+      if (img) content.push(img);
+    }
     if (mediaKind === 'video' && videoFrames.length) {
       for (const f of videoFrames.slice(0, 8)) {
-        content.push({ type: 'image_url', image_url: { url: f } });
+        const img = toClaudeImage(f);
+        if (img) content.push(img);
       }
     }
-    messages.push({ role: 'user', content });
 
-    const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    const completion = await client.messages.create({
+      model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
+      max_tokens: 1024,
       temperature: mediaKind === 'video' ? 0.4 : 0.8,
-      messages,
-      response_format: { type: 'json_object' }, // we'll wrap array in an object to be safe
-      // But since we asked for array, some models may not honor; we handle parsing below.
+      system: systemPrompt,
+      messages: [{ role: 'user', content }],
     });
 
-    let text = completion.choices?.[0]?.message?.content || '[]';
+    let text = completion.content?.[0]?.type === 'text' ? completion.content[0].text : '[]';
 
     let suggestedMood = null;
     try {
@@ -183,7 +185,7 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     } catch {}
 
 
-// Generate hashtags via OpenAI (min 6)
+// Generate hashtags via Claude (min 6)
 const hashPrompt = [
   'You generate effective, non-spammy hashtags for Instagram/TikTok.',
   'Return JSON: {"hashtags": ["#tag1", "#tag2", ...]} with 12-20 items.',
@@ -194,15 +196,16 @@ const hashMessages = [
   { role: 'system', content: hashPrompt },
   { role: 'user', content: JSON.stringify({ topic: prompt, location: locationStr||null }) }
 ];
-const hashComp = await client.chat.completions.create({
-  model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+const hashComp = await client.messages.create({
+  model: process.env.ANTHROPIC_MODEL || 'claude-opus-4-6',
+  max_tokens: 512,
   temperature: 0.6,
-  response_format: { type: 'json_object' },
-  messages: hashMessages,
+  system: hashMessages[0].content,
+  messages: [hashMessages[1]],
 });
 let hashtags = [];
 try {
-  const parsedH = JSON.parse(hashComp.choices?.[0]?.message?.content || '{}');
+  const parsedH = JSON.parse(hashComp.content?.[0]?.type === 'text' ? hashComp.content[0].text : '{}');
   if (Array.isArray(parsedH.hashtags)) hashtags = parsedH.hashtags.filter(Boolean);
 } catch {}
 if (hashtags.length < 6) {
@@ -213,23 +216,22 @@ if (hashtags.length < 6) {
     locationStr ? `#${locationStr.toLowerCase().replace(/[^a-z0-9]/g,'')}` : null
   ].filter(Boolean)));
 }
-    // Try to parse as array; support object with {captions:[...]} too.
+    // Parse captions: support array of strings or objects {hook, caption, onscreen_text}
     let captions = [];
     try {
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) captions = parsed;
       else if (Array.isArray(parsed.captions)) captions = parsed.captions;
     } catch {
-      // fallback: try to extract JSON array
       const m = text.match(/\[[\s\S]*\]/);
       if (m) { try { captions = JSON.parse(m[0]); } catch {} }
     }
-    captions = (captions || []).map(s => String(s)).filter(Boolean).slice(0, 6);
-    // Ensure array shape
-    if (!Array.isArray(captions)) captions = [String(captions)];
-    if (captions.length === 0) {
-      captions = ["Couldn't parse captions. Please try again."];
-    }
+    captions = (captions || []).slice(0, 6).filter(Boolean).map(v => {
+      if (typeof v === 'object' && v !== null && (v.hook || v.caption)) return v;
+      const s = String(v || '').trim();
+      return s.length > 10 ? s : null;
+    }).filter(Boolean);
+    if (!captions.length) captions = ["Couldn't parse captions. Please try again."];
 
     // decrement credits if not pro
     let newRemaining = remaining;
@@ -248,6 +250,7 @@ if (hashtags.length < 6) {
       hashtags,
       suggestedMood,
       remaining: user.is_pro ? null : newRemaining,
+      credits_left: user.is_pro ? null : newRemaining,
       isPro: !!user.is_pro,
       location: locationStr || null
     });

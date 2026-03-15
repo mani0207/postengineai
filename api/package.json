@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "nodemailer": "^7.0.6",
-    "openai": "^5.22.0"
+    "@anthropic-ai/sdk": "^0.54.0"
   }
 }
